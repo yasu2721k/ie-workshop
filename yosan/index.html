@@ -40,6 +40,7 @@
                         <span class="circle">キッチン</span>
                         <span class="circle">収納</span>
                         <span class="circle">その他</span>
+                        <span class="circle">アンケート</span>
                         <span class="circle result">診断結果</span>
                     </div>
                 </div>
@@ -169,6 +170,7 @@
                         <span class="circle active">キッチン</span>
                         <span class="circle">収納</span>
                         <span class="circle">その他</span>
+                        <span class="circle">アンケート</span>
                         <span class="circle result">診断結果</span>
                     </div>
                 </div>
@@ -238,6 +240,7 @@
                         <span class="circle completed">キッチン</span>
                         <span class="circle active">収納</span>
                         <span class="circle">その他</span>
+                        <span class="circle">アンケート</span>
                         <span class="circle result">診断結果</span>
                     </div>
                 </div>
@@ -307,6 +310,7 @@
                         <span class="circle completed">キッチン</span>
                         <span class="circle completed">収納</span>
                         <span class="circle active">その他</span>
+                        <span class="circle">アンケート</span>
                         <span class="circle result">診断結果</span>
                     </div>
                 </div>
@@ -403,9 +407,110 @@
                 </div>
             </section>
 
-            <!-- ステップ5（最終結果） -->
+            <!-- ステップ5（追加アンケート） -->
             <section id="step5" class="step">
+                <header class="header">
+                    <div class="header-content">
+                        <h1>家づくり相談所</h1>
+                        <p class="subtitle">質問に答えるだけで家づくりに必要な予算を簡単診断</p>
+                    </div>
+                </header>
                 
+                <div class="progress-container">
+                    <div class="progress-labels">
+                        <span>質問に答えて予算診断</span>
+                    </div>
+                    <div class="progress-circles">
+                        <span class="circle completed">リビング</span>
+                        <span class="circle completed">キッチン</span>
+                        <span class="circle completed">収納</span>
+                        <span class="circle completed">その他</span>
+                        <span class="circle active">アンケート</span>
+                        <span class="circle result">診断結果</span>
+                    </div>
+                </div>
+
+                <div class="question-section">
+                    <h2 class="question-mark">Q</h2>
+                    <p class="question-text">家づくりで参考にしている媒体を教えてください</p>
+                    <p class="question-sub">（複数回答可）</p>
+                    <div class="answer-options checkbox-group">
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="reference-media" value="YouTube">
+                            <span>YouTube</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="reference-media" value="Instagram">
+                            <span>Instagram</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="reference-media" value="TikTok">
+                            <span>TikTok</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="reference-media" value="Pinterest">
+                            <span>Pinterest</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="reference-media" value="ブログ">
+                            <span>ブログ</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-section">
+                    <h2 class="question-mark">Q</h2>
+                    <p class="question-text">家づくりで参考にしているインフルエンサーはいますか？</p>
+                    <p class="question-sub">（自由記述・回答しなくてもOK）</p>
+                    <div class="text-input-container">
+                        <textarea name="influencer" placeholder="例：〇〇さんのYouTubeチャンネル" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="question-section">
+                    <h2 class="question-mark">Q</h2>
+                    <p class="question-text">現在の状況を教えてください</p>
+                    <p class="question-sub">（複数回答可）</p>
+                    <div class="answer-options checkbox-group">
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="current-status" value="漠然と家づくりを考え中">
+                            <span>漠然と家づくりを考え中</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="current-status" value="家づくり情報収集中">
+                            <span>家づくり情報収集中</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="current-status" value="住宅会社検討中">
+                            <span>住宅会社検討中</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="current-status" value="住宅会社と契約し打ち合わせ中">
+                            <span>住宅会社と契約し打ち合わせ中</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="current-status" value="着工済み">
+                            <span>着工済み</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="current-status" value="完成or引っ越し済み">
+                            <span>完成or引っ越し済み</span>
+                        </label>
+                        <label class="answer-option checkbox-option">
+                            <input type="checkbox" name="current-status" value="その他">
+                            <span>その他</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-container">
+                    <button class="back-btn" onclick="previousStep()">← 戻る</button>
+                    <button class="next-btn" onclick="nextStep()">次に進む →</button>
+                </div>
+            </section>
+
+            <!-- ステップ6（最終結果） -->
+            <section id="step6" class="step">
                 <div class="result-header">
                     <h2>ズバリあなたの理想のお家の予算はいくら？！</h2>
                 </div>

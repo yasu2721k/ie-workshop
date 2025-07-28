@@ -1,5 +1,5 @@
 let currentStep = 1;
-const totalSteps = 5;
+const totalSteps = 6;
 
 // 診断結果の計算データ
 const basePrice = 2500; // 基準価格（万円）
@@ -124,13 +124,13 @@ function showStep(stepNumber) {
 function nextStep() {
     // フォームの検証（必要に応じて）
     if (validateCurrentStep()) {
-        if (currentStep < 4) {
+        if (currentStep < 5) {
             currentStep++;
             showStep(currentStep);
-        } else if (currentStep === 4) {
-            // ステップ4から5（結果ページ）に移動する時に診断結果を計算
+        } else if (currentStep === 5) {
+            // ステップ5から6（結果ページ）に移動する時に診断結果を計算
             calculateResult();
-            currentStep = 5;
+            currentStep = 6;
             showStep(currentStep);
         }
     }
@@ -293,6 +293,23 @@ function validateCurrentStep() {
             if (!hasWashroom) {
                 alert('洗面所のタイプを選択してください。');
                 scrollToQuestion('washroom');
+                return false;
+            }
+            break;
+            
+        case 5:
+            // ステップ5: アンケート - 参考媒体と現在の状況は必須
+            const hasReferenceMedia = document.querySelectorAll('input[name="reference-media"]:checked').length > 0;
+            const hasCurrentStatus = document.querySelectorAll('input[name="current-status"]:checked').length > 0;
+            
+            if (!hasReferenceMedia) {
+                alert('家づくりで参考にしている媒体を選択してください。');
+                document.querySelector('input[name="reference-media"]').closest('.question-section').scrollIntoView({ behavior: 'smooth' });
+                return false;
+            }
+            if (!hasCurrentStatus) {
+                alert('現在の状況を選択してください。');
+                document.querySelector('input[name="current-status"]').closest('.question-section').scrollIntoView({ behavior: 'smooth' });
                 return false;
             }
             break;
