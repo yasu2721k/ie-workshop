@@ -54,11 +54,13 @@ header {
     padding: 15px;
     margin: -30px -30px 20px;
     border-radius: 8px 8px 0 0;
+    text-align: left;
 }
 
 .step-indicator {
     font-size: 20px;
     font-weight: bold;
+    text-align: left;
 }
 
 .step-number {
@@ -673,6 +675,7 @@ footer {
     border-radius: 20px;
     margin-bottom: 30px;
     box-shadow: 0 8px 25px rgba(255, 165, 0, 0.3);
+    text-align: left;
 }
 
 .budget-amount .currency {
@@ -696,15 +699,141 @@ footer {
 
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
+    .budget-amount {
+        padding: 30px 15px;
+    }
+    
     .budget-amount .amount {
-        font-size: 42px;
+        font-size: 36px;
+        line-height: 1.2;
     }
     
     .budget-amount .currency {
-        font-size: 20px;
+        font-size: 18px;
+        margin-top: 8px;
     }
     
     .budget-amount .unit {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .budget-amount {
+        padding: 25px 10px;
+        text-align: center;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    
+    .budget-amount .currency {
+        font-size: 18px;
+        margin-right: 1px;
+        vertical-align: top;
+        margin-top: 2px;
+    }
+    
+    .budget-amount .amount {
         font-size: 22px;
+        line-height: 1.1;
+        margin: 0 1px;
+        word-break: keep-all;
+        white-space: nowrap;
+    }
+    
+    .budget-amount .unit {
+        font-size: 18px;
+        margin-left: 1px;
+    }
+}
+
+@media (max-width: 360px) {
+    .budget-amount {
+        padding: 20px 8px;
+    }
+    
+    .budget-amount .currency {
+        font-size: 14px;
+    }
+    
+    .budget-amount .amount {
+        font-size: 18px;
+    }
+    
+    .budget-amount .unit {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 320px) {
+    .budget-amount {
+        padding: 20px 5px;
+    }
+    
+    .budget-amount .currency {
+        font-size: 12px;
+    }
+    
+    .budget-amount .amount {
+        font-size: 16px;
+    }
+    
+    .budget-amount .unit {
+        font-size: 12px;
+    }
+}
+
+/* バナー表示用スタイル */
+.banner-container {
+    margin-top: 30px;
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+}
+
+.banner-description {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.banner-container a {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.banner-container a:hover {
+    transform: scale(1.02);
+}
+
+.banner-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+    .banner-container {
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    .banner-container img {
+        width: 100%;
+        max-width: 280px;
+        height: auto;
+    }
+}
+
+@media (max-width: 360px) {
+    .banner-container img {
+        max-width: 250px;
     }
 }
