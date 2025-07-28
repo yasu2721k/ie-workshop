@@ -128,10 +128,28 @@ function nextStep() {
             currentStep++;
             showStep(currentStep);
         } else if (currentStep === 5) {
-            // ステップ5から6（結果ページ）に移動する時に診断結果を計算
+            // ステップ5のアンケート回答をチェックして分岐
+            const selectedStatus = Array.from(document.querySelectorAll('input[name="current-status"]:checked'))
+                .map(input => input.value);
+            
+            const hasAdvancedStatus = selectedStatus.some(status => 
+                status === '住宅会社と契約し打ち合わせ中' || 
+                status === '着工済み' ||
+                status === '完成or引っ越し済み'
+            );
+            
+            // 診断結果を計算
             calculateResult();
-            currentStep = 6;
-            showStep(currentStep);
+            
+            if (hasAdvancedStatus) {
+                // 契約済み・完成済みの人は診断結果金額表示ページへ
+                currentStep = '6a';
+                showStep(currentStep);
+            } else {
+                // それ以外の人はLINE誘導ページへ
+                currentStep = '6b';
+                showStep(currentStep);
+            }
         }
     }
 }
@@ -172,16 +190,27 @@ function determineBudgetRange(score) {
 function updateResultPage(budgetRange, totalScore) {
     // 少し遅延を入れてDOMが確実に更新されるのを待つ
     setTimeout(() => {
-        // LINE ボタンのURLを更新
-        const lineBtn = document.querySelector('.line-btn');
+        // LINE ボタンのURLを更新（step6b用）
+        const lineBtn = document.querySelector('#step6b .line-btn');
         if (lineBtn) {
             lineBtn.href = budgetRange.url;
             lineBtn.setAttribute('target', '_blank'); // 新しいタブで開く
         }
         
-        // 予算範囲は表示せず、デフォルトメッセージを維持
+        // step6aの予算範囲を表示
+        updateBudgetDisplay(budgetRange);
     }, 100);
 }
+
+// 予算範囲表示を更新する関数
+function updateBudgetDisplay(budgetRange) {
+    const budgetElement = document.getElementById('calculatedBudgetRange');
+    
+    if (budgetElement && budgetRange) {
+        budgetElement.textContent = `${budgetRange.min.toLocaleString()}~${budgetRange.max.toLocaleString()}`;
+    }
+}
+
 
 function previousStep() {
     if (currentStep > 1) {
