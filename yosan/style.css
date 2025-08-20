@@ -837,3 +837,140 @@ footer {
         max-width: 250px;
     }
 }
+
+/* WordPress LP風デザインのスタイル */
+#body_wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    background: #fff;
+}
+
+/* デフォルトの画像スタイル - すべての画像を統一サイズに */
+#body_wrap > img {
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+}
+
+/* PC版ヘッダー */
+.lp_head.pc {
+    display: block;
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.lp_bg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.lp_cta {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 400px;
+    width: 60%;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.lp_cta:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* SP版 */
+.sp {
+    display: none;
+}
+
+/* CTAリンク */
+.cta {
+    margin: 0;
+    text-align: center;
+}
+
+.cta a {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.cta img {
+    cursor: pointer;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    max-width: 650px;
+    width: 90%;
+    height: auto;
+}
+
+.cta img:hover {
+    transform: scale(1.02);
+    opacity: 0.95;
+}
+
+/* step6bの特別な設定 */
+#step6b.step {
+    background-color: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* 年収選択肢の表示を確実に設定 */
+#step5 .answer-options {
+    display: flex !important;
+    gap: 15px !important;
+    flex-wrap: wrap !important;
+}
+
+#step5 .answer-option {
+    display: flex !important;
+    align-items: center !important;
+    background-color: #f0f0f0 !important;
+    padding: 12px 20px !important;
+    border-radius: 25px !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+    border: none !important;
+    min-width: auto !important;
+}
+
+#step5 .answer-option:hover {
+    background-color: #e0e0e0 !important;
+}
+
+#step5 .answer-option input[type="radio"] {
+    margin-right: 8px !important;
+}
+
+#step5 .answer-option span {
+    font-size: 16px !important;
+    color: #333 !important;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .lp_head.pc {
+        display: none;
+    }
+    
+    .sp {
+        display: block;
+    }
+    
+    .sp img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .cta {
+        margin: 0;
+    }
+}

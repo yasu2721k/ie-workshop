@@ -504,6 +504,31 @@
                     </div>
                 </div>
 
+                <!-- 世帯年収の質問 -->
+                <div class="question-section">
+                    <h2 class="question-mark">Q</h2>
+                    <p class="question-text">世帯年収を教えてください</p>
+                    <p class="question-sub">（必須項目）</p>
+                    <div class="answer-options">
+                        <label class="answer-option">
+                            <input type="radio" name="household-income" value="~399万円">
+                            <span>~399万円</span>
+                        </label>
+                        <label class="answer-option">
+                            <input type="radio" name="household-income" value="400~699万円">
+                            <span>400~699万円</span>
+                        </label>
+                        <label class="answer-option">
+                            <input type="radio" name="household-income" value="700~999万円">
+                            <span>700~999万円</span>
+                        </label>
+                        <label class="answer-option">
+                            <input type="radio" name="household-income" value="1000万円以上">
+                            <span>1000万円以上</span>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="button-container">
                     <button class="back-btn" onclick="previousStep()">← 戻る</button>
                     <button class="next-btn" onclick="nextStep()">次に進む →</button>
@@ -544,25 +569,35 @@
 
             <!-- ステップ6B（LINE誘導） -->
             <section id="step6b" class="step">
-                <div class="result-header">
-                    <h2>ズバリあなたの理想のお家の予算はいくら？！</h2>
+                <div id="body_wrap">
+                    <div class="lp_head pc">
+                        <img class="lp_bg" src="images/wp-content/673_base_3.jpg" alt="bg">
+                        <a href="#" class="cta-link"><img class="lp_cta cta" src="images/wp-content/673_cta_2.jpg" alt="cta"></a>
+                    </div>
+                    <div class="sp">
+                        <img src="images/wp-content/673_base_sp-1.jpg" alt="" style="display: block; margin: 0 auto;" />
+                        <div class="cta">
+                            <a href="#" class="cta-link">
+                                <img src="images/wp-content/673_cta_sp.jpg" alt="cta" style="display: block; margin: 0 auto;" />
+                            </a>
+                        </div>
+                        <img src="images/wp-content/673_base_sp2.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    </div>
+                    <img src="images/wp-content/677_4-1.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <img src="images/wp-content/676.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <img src="images/wp-content/677_2.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <img src="images/wp-content/06_6.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <img src="images/wp-content/07_6.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <img src="images/wp-content/07-3.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <img src="images/wp-content/08_3.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <img src="images/wp-content/674_2.jpg" alt="" style="display: block; margin: 0 auto;" />
+                    <div class="cta">
+                        <a href="#" class="cta-link">
+                            <img src="images/wp-content/676_5.jpg" alt="cta" style="display: block; margin: 0 auto;" />
+                        </a>
+                    </div>
+                    <img src="images/wp-content/10_4.jpg" alt="" style="display: block; margin: 0 auto;" />
                 </div>
-
-                <div class="result-content">
-                    <h3>診断結果が完成しました</h3>
-                    
-                    <p class="result-message">
-                        LINE登録をして<br>
-                        あなたの理想のお家を建てるのに<br>
-                        必要な予算をご確認ください。
-                    </p>
-
-                    <a href="#" class="line-btn">
-                        <span class="line-icon">LINE</span>
-                        診断結果を見る →
-                    </a>
-                </div>
-
             </section>
         </div>
     </main>

@@ -132,17 +132,21 @@ function nextStep() {
             const selectedStatus = Array.from(document.querySelectorAll('input[name="current-status"]:checked'))
                 .map(input => input.value);
             
+            const selectedIncome = document.querySelector('input[name="household-income"]:checked')?.value;
+            
             const hasAdvancedStatus = selectedStatus.some(status => 
                 status === '住宅会社と契約し打ち合わせ中' || 
                 status === '着工済み' ||
                 status === '完成or引っ越し済み'
             );
             
+            const isLowIncome = selectedIncome === '~399万円';
+            
             // 診断結果を計算
             calculateResult();
             
-            if (hasAdvancedStatus) {
-                // 契約済み・完成済みの人は診断結果金額表示ページへ
+            if (hasAdvancedStatus || isLowIncome) {
+                // 契約済み・完成済みの人、または世帯年収399万円以下の人は診断結果金額表示ページへ
                 currentStep = '6a';
                 showStep(currentStep);
             } else {
@@ -190,12 +194,12 @@ function determineBudgetRange(score) {
 function updateResultPage(budgetRange, totalScore) {
     // 少し遅延を入れてDOMが確実に更新されるのを待つ
     setTimeout(() => {
-        // LINE ボタンのURLを更新（step6b用）
-        const lineBtn = document.querySelector('#step6b .line-btn');
-        if (lineBtn) {
-            lineBtn.href = budgetRange.url;
-            lineBtn.setAttribute('target', '_blank'); // 新しいタブで開く
-        }
+        // CTAリンクのURLを更新（step6b用）
+        const ctaLinks = document.querySelectorAll('#step6b .cta a, #step6b .lp_head a');
+        ctaLinks.forEach(link => {
+            link.href = budgetRange.url;
+            link.setAttribute('target', '_blank'); // 新しいタブで開く
+        });
         
         // step6aの予算範囲を表示
         updateBudgetDisplay(budgetRange);
@@ -327,9 +331,10 @@ function validateCurrentStep() {
             break;
             
         case 5:
-            // ステップ5: アンケート - 参考媒体と現在の状況は必須
+            // ステップ5: アンケート - 参考媒体、現在の状況、世帯年収は必須
             const hasReferenceMedia = document.querySelectorAll('input[name="reference-media"]:checked').length > 0;
             const hasCurrentStatus = document.querySelectorAll('input[name="current-status"]:checked').length > 0;
+            const hasHouseholdIncome = document.querySelector('input[name="household-income"]:checked') !== null;
             
             if (!hasReferenceMedia) {
                 alert('家づくりで参考にしている媒体を選択してください。');
@@ -339,6 +344,11 @@ function validateCurrentStep() {
             if (!hasCurrentStatus) {
                 alert('現在の状況を選択してください。');
                 document.querySelector('input[name="current-status"]').closest('.question-section').scrollIntoView({ behavior: 'smooth' });
+                return false;
+            }
+            if (!hasHouseholdIncome) {
+                alert('世帯年収を選択してください。');
+                document.querySelector('input[name="household-income"]').closest('.question-section').scrollIntoView({ behavior: 'smooth' });
                 return false;
             }
             break;
@@ -638,13 +648,13 @@ document.addEventListener('DOMContentLoaded', function() {
     showStep(1);
     
     // デフォルトURLを設定（テスト用）
-    const lineBtn = document.querySelector('.line-btn');
-    if (lineBtn) {
+    const defaultCtaLinks = document.querySelectorAll('.cta a, .lp_head a');
+    defaultCtaLinks.forEach(link => {
         // hrefが#または空の場合、デフォルトURLを設定
-        if (!lineBtn.href || lineBtn.href.endsWith('#')) {
-            lineBtn.href = budgetRanges[0].url; // 最初の範囲のURLをデフォルトに
+        if (!link.href || link.href.endsWith('#')) {
+            link.href = budgetRanges[0].url; // 最初の範囲のURLをデフォルトに
         }
-    }
+    });
     
     // ブラウザの戻る/進むボタンの対応
     window.addEventListener('popstate', function(event) {
