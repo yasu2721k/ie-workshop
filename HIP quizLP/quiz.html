@@ -15,7 +15,6 @@
                 <img src="girl-illustration.svg" alt="女の子のイラスト">
             </div>
             <button class="btn-primary" onclick="startQuiz()">診断結果を見る</button>
-            <a href="#" class="top-link">TOPへ戻る</a>
         </div>
     </div>
 
@@ -41,7 +40,7 @@
             </div>
             <div id="feedback" class="feedback"></div>
             <button id="next-btn" class="btn-next" onclick="nextQuestion()" style="display: none;">次の質問へ</button>
-            <a href="#" class="top-link">TOPへ戻る</a>
+            <a href="javascript:void(0)" class="top-link" onclick="goToTop()">TOPへ戻る</a>
         </div>
     </div>
 
@@ -51,15 +50,188 @@
             <h1>診断結果</h1>
             <div class="result-score">
                 <h2 id="score-text">6問中0問正解</h2>
-                <div class="score-details">
-                    <p id="percentage">正解率: 0%</p>
+                <div class="percentage-display">
+                    <span class="percentage-title">正解率</span>
+                    <div class="percentage-value">
+                        <span id="percentage-number">0</span>
+                        <span class="percentage-label">%</span>
+                    </div>
                 </div>
             </div>
-            <div class="result-message">
-                <p id="result-message-text"></p>
+            <div class="survey-prompt">
+                <p>あなたの家にホームインスペクションが<br>必要かチェックしてみましょう</p>
+                <button class="btn-primary" onclick="startSurvey()">必要度をチェックする</button>
+                <p class="time-estimate">（所要時間 30秒）</p>
             </div>
-            <button class="btn-primary" onclick="restartQuiz()">もう一度診断する</button>
-            <a href="#" class="top-link">TOPへ戻る</a>
+            <a href="javascript:void(0)" class="top-link" onclick="goToTop()">TOPへ戻る</a>
+        </div>
+    </div>
+
+    <!-- アンケートページ9 -->
+    <div id="survey-page-9" class="screen survey-screen">
+        <div class="container">
+            <div class="survey-header">
+                <span>ページ9</span>
+            </div>
+            <h2>Q1.あなたの家は、どんな構造・工法で建てる予定ですか？</h2>
+            <div class="survey-options">
+                <label class="survey-option">
+                    <input type="radio" name="q9-1" value="A">
+                    <span>A. 木造（在来工法や2×4など）</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q9-1" value="B">
+                    <span>B. 鉄骨造（軽量鉄骨など）</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q9-1" value="C">
+                    <span>C. 鉄筋コンクリート造（RC）</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q9-1" value="D">
+                    <span>D. 工法がわからない</span>
+                </label>
+            </div>
+            <button class="btn-primary" onclick="nextSurveyPage(9)">次へ</button>
+            <a href="javascript:void(0)" class="top-link" onclick="goToTop()">TOPへ戻る</a>
+        </div>
+    </div>
+
+    <!-- アンケートページ10 -->
+    <div id="survey-page-10" class="screen survey-screen">
+        <div class="container">
+            <div class="survey-header">
+                <span>ページ10</span>
+            </div>
+            <h2>Q2.住宅会社を教えてください</h2>
+            <div class="survey-options">
+                <label class="survey-option" onclick="toggleHouseMakers(this)">
+                    <input type="radio" name="q10-1" value="A">
+                    <span>A. 大手ハウスメーカー</span>
+                </label>
+                <div id="house-makers-list" class="house-makers-list" style="display: none;">
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="積水ハウス">
+                        <span>積水ハウス</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="大和ハウス工業">
+                        <span>大和ハウス工業</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="住友林業">
+                        <span>住友林業</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="ミサワホーム">
+                        <span>ミサワホーム</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="セキスイハイム">
+                        <span>セキスイハイム</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="パナソニック ホームズ">
+                        <span>パナソニック ホームズ</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="トヨタホーム">
+                        <span>トヨタホーム</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="へーベルハウス">
+                        <span>へーベルハウス（旭化成ホームズ）</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="三井ホーム">
+                        <span>三井ホーム</span>
+                    </label>
+                    <label class="house-maker-option">
+                        <input type="radio" name="house-maker" value="一条工務店">
+                        <span>一条工務店</span>
+                    </label>
+                </div>
+                <label class="survey-option" onclick="hideHouseMakers()">
+                    <input type="radio" name="q10-1" value="B">
+                    <span>B. 地域の工務店</span>
+                </label>
+                <label class="survey-option" onclick="hideHouseMakers()">
+                    <input type="radio" name="q10-1" value="C">
+                    <span>C. その他</span>
+                </label>
+            </div>
+            <button class="btn-secondary" onclick="prevSurveyPage(10)">戻る</button>
+            <button class="btn-primary" onclick="nextSurveyPage(10)">次へ</button>
+            <a href="javascript:void(0)" class="top-link" onclick="goToTop()">TOPへ戻る</a>
+        </div>
+    </div>
+
+    <!-- アンケートページ11 -->
+    <div id="survey-page-11" class="screen survey-screen">
+        <div class="container">
+            <div class="survey-header">
+                <span>ページ11</span>
+            </div>
+            <h2>Q3.現在の状況を教えてください</h2>
+            <div class="survey-options">
+                <label class="survey-option">
+                    <input type="radio" name="q11-1" value="漠然と家づくりを考え中">
+                    <span>漠然と家づくりを考え中</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q11-1" value="家づくり情報収集中">
+                    <span>家づくり情報収集中</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q11-1" value="住宅会社と契約し、打ち合わせ中">
+                    <span>住宅会社と契約し、打ち合わせ中</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q11-1" value="着工済み">
+                    <span>着工済み</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q11-1" value="完成or引っ越し済み">
+                    <span>完成or引っ越し済み</span>
+                </label>
+                <label class="survey-option">
+                    <input type="radio" name="q11-1" value="その他">
+                    <span>その他</span>
+                </label>
+            </div>
+            <button class="btn-secondary" onclick="prevSurveyPage(11)">戻る</button>
+            <button class="btn-primary" onclick="nextSurveyPage(11)">次へ</button>
+            <a href="javascript:void(0)" class="top-link" onclick="goToTop()">TOPへ戻る</a>
+        </div>
+    </div>
+
+    <!-- アンケートページ12A -->
+    <div id="survey-page-12a" class="screen survey-screen">
+        <div class="container">
+            <div class="survey-header">
+                <span>ページ12A</span>
+            </div>
+            <h2>診断結果が出ました！</h2>
+            <div class="line-registration">
+                <p>LINE登録して結果を見る</p>
+                <button class="btn-line">LINEで登録する</button>
+            </div>
+            <a href="javascript:void(0)" class="top-link" onclick="goToTop()">TOPへ戻る</a>
+        </div>
+    </div>
+
+    <!-- アンケートページ12B -->
+    <div id="survey-page-12b" class="screen survey-screen">
+        <div class="container">
+            <div class="survey-header">
+                <span>ページ12B</span>
+            </div>
+            <h2>診断結果が出ました！</h2>
+            <div class="importance-result">
+                <p class="importance-label">ホームインスペクション必要度</p>
+                <h3 class="importance-level">高</h3>
+            </div>
+            <a href="javascript:void(0)" class="top-link" onclick="goToTop()">TOPへ戻る</a>
         </div>
     </div>
 

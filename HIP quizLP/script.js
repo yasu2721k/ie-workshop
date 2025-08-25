@@ -8,8 +8,8 @@ const questions = [
     {
         question: "この写真の中に耐震性能に関わる欠陥があります。どれが不具合か回答してください",
         image: "images/2.png",
-        answers: ["木材の種類が間違っている", "ビスが完全に締まっていない", "ビスが規定通より少ない"],
-        correctAnswer: 1 // B. ビスが完全に締まっていない
+        answers: ["木材の種類が間違っている", "ビスが傾いて締め込まれている", "ビスが規定量より少ない"],
+        correctAnswer: 1 // B. ビスが傾いて締め込まれている
     },
     {
         question: "この写真の中に断熱性能に関する欠陥があります。どれが不具合か回答してください",
@@ -18,7 +18,7 @@ const questions = [
         correctAnswer: 0 // A. 断熱材が不足し空洞になっている
     },
     {
-        question: "この写真の中に防水性能に関する欠陥があります。いくつ不具合がありますか？",
+        question: "この写真の中に防水性能に関する欠陥があります。どれが不具合か回答してください",
         image: "images/4.png",
         answers: ["1", "2", "3"],
         correctAnswer: 1 // B. 2
@@ -26,8 +26,8 @@ const questions = [
     {
         question: "この写真の中に基礎工事に関する欠陥があります。いくつ不具合がありますか？",
         image: "images/5.png",
-        answers: ["使用している鉄筋が規定より細い", "配筋を設置する間隔が広すぎる", "使用する鉄筋の種類が間違っている"],
-        correctAnswer: 1 // B. 配筋を設置する間隔が広すぎる
+        answers: ["使用している鉄筋が規定より細い", "配筋を設置する間隔が広すぎる", "補強筋が入っていない"],
+        correctAnswer: 2 // C. 補強筋が入っていない
     },
     {
         question: "新築で施工ミスが起こる一番の原因は、次のうちどれ？",
@@ -139,22 +139,7 @@ function showResult() {
     const percentage = Math.round((score / questions.length) * 100);
     
     document.getElementById('score-text').textContent = `${questions.length}問中${score}問正解`;
-    document.getElementById('percentage').textContent = `正解率: ${percentage}%`;
-    
-    let message = '';
-    if (percentage === 100) {
-        message = 'パーフェクト！素晴らしい結果です！あなたの直感力と判断力は抜群です。';
-    } else if (percentage >= 80) {
-        message = '素晴らしい！とても良い結果です。あなたは優れた洞察力を持っています。';
-    } else if (percentage >= 60) {
-        message = '良い結果です！あなたはバランスの取れた判断力を持っています。';
-    } else if (percentage >= 40) {
-        message = 'まずまずの結果です。もう少し自分の直感を信じてみましょう。';
-    } else {
-        message = '次回はもっと良い結果が出るはずです。自分らしい選択を心がけてみてください。';
-    }
-    
-    document.getElementById('result-message-text').textContent = message;
+    document.getElementById('percentage-number').textContent = percentage;
 }
 
 function restartQuiz() {
@@ -162,13 +147,167 @@ function restartQuiz() {
     document.getElementById('start-screen').classList.add('active');
 }
 
+// アンケート関連の変数
+let surveyAnswers = {
+    page9: null,
+    page10: null,
+    page11: null,
+    houseMaker: null
+};
+
+// アンケートを開始
+function startSurvey() {
+    document.getElementById('result-screen').classList.remove('active');
+    document.getElementById('survey-page-9').classList.add('active');
+}
+
+// ハウスメーカーリストの表示切り替え
+function toggleHouseMakers(element) {
+    const houseMakersList = document.getElementById('house-makers-list');
+    const radioInput = element.querySelector('input[type="radio"]');
+    
+    // ラジオボタンを選択
+    radioInput.checked = true;
+    
+    // ハウスメーカーリストを表示
+    houseMakersList.style.display = 'block';
+    
+    // スムーズなアニメーション
+    setTimeout(() => {
+        houseMakersList.style.maxHeight = houseMakersList.scrollHeight + 'px';
+    }, 10);
+}
+
+// ハウスメーカーリストを非表示
+function hideHouseMakers() {
+    const houseMakersList = document.getElementById('house-makers-list');
+    houseMakersList.style.display = 'none';
+    
+    // ラジオボタンをリセット
+    const radios = houseMakersList.querySelectorAll('input[type="radio"]');
+    radios.forEach(radio => radio.checked = false);
+}
+
+// 次のアンケートページへ
+function nextSurveyPage(currentPage) {
+    // 現在のページの回答を保存
+    const currentInput = document.querySelector(`input[name="q${currentPage}-1"]:checked`);
+    if (!currentInput) {
+        alert('回答を選択してください');
+        return;
+    }
+    
+    if (currentPage === 9) {
+        surveyAnswers.page9 = currentInput.value;
+    } else if (currentPage === 10) {
+        surveyAnswers.page10 = currentInput.value;
+        
+        // ハウスメーカーが選択されている場合、その詳細も保存
+        if (currentInput.value === 'A') {
+            const selectedMaker = document.querySelector('input[name="house-maker"]:checked');
+            surveyAnswers.houseMaker = selectedMaker ? selectedMaker.value : null;
+        }
+    } else if (currentPage === 11) {
+        surveyAnswers.page11 = currentInput.value;
+    }
+    
+    document.getElementById(`survey-page-${currentPage}`).classList.remove('active');
+    
+    if (currentPage === 9) {
+        document.getElementById('survey-page-10').classList.add('active');
+    } else if (currentPage === 10) {
+        document.getElementById('survey-page-11').classList.add('active');
+    } else if (currentPage === 11) {
+        // ページ9でB,Cを選んだ人は回答に関わらず12Bへ
+        if (surveyAnswers.page9 === 'B' || surveyAnswers.page9 === 'C') {
+            showSurveyResult12B();
+        } 
+        // ページ11の回答に基づいて分岐
+        else if (surveyAnswers.page11 === '着工済み' || 
+            surveyAnswers.page11 === '完成or引っ越し済み' || 
+            surveyAnswers.page11 === '完成or引越し済み') {
+            // 着工済み・完成の場合は12Bへ
+            showSurveyResult12B();
+        } else {
+            // それ以外は12Aへ
+            showSurveyResult12A();
+        }
+    }
+}
+
+// 前のアンケートページへ
+function prevSurveyPage(currentPage) {
+    document.getElementById(`survey-page-${currentPage}`).classList.remove('active');
+    
+    if (currentPage === 10) {
+        document.getElementById('survey-page-9').classList.add('active');
+    } else if (currentPage === 11) {
+        document.getElementById('survey-page-10').classList.add('active');
+    }
+}
+
+// 12Aページの結果を表示
+function showSurveyResult12A() {
+    // ページ9の回答に基づいてLINEリンクタイプを決定
+    let linkType = 'DEFAULT';
+    if (surveyAnswers.page9 === 'A') {
+        linkType = 'TYPE_A';
+    } else if (surveyAnswers.page9 === 'D') {
+        linkType = 'TYPE_B';
+    }
+    
+    const page12a = document.getElementById('survey-page-12a');
+    // ここでlinkTypeに応じて異なるLINEリンクを設定可能
+    // 現在は同じリンクを使用
+    page12a.classList.add('active');
+}
+
+// 12Bページの結果を表示
+function showSurveyResult12B() {
+    // ページ9の回答に基づいて重要度を決定
+    let importance = '中';
+    if (surveyAnswers.page9 === 'A') {
+        importance = '高';
+    } else if (surveyAnswers.page9 === 'B' || surveyAnswers.page9 === 'C') {
+        importance = '低';
+    } else if (surveyAnswers.page9 === 'D') {
+        importance = '中';
+    }
+    
+    const page12b = document.getElementById('survey-page-12b');
+    const levelElement = page12b.querySelector('.importance-level');
+    levelElement.textContent = importance;
+    page12b.classList.add('active');
+}
+
+// TOPへ戻る機能
+function goToTop() {
+    // すべての画面を非表示
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    // スタート画面を表示
+    document.getElementById('start-screen').classList.add('active');
+    // クイズの状態をリセット
+    currentQuestion = 0;
+    score = 0;
+    answered = false;
+    // アンケートの回答もリセット
+    surveyAnswers = {
+        page9: null,
+        page10: null,
+        page11: null,
+        houseMaker: null
+    };
+}
+
 window.onload = function() {
     const startScreen = document.getElementById('start-screen');
     const h1 = startScreen.querySelector('h1');
-    h1.textContent = '住宅施工の知識診断クイズ';
+    h1.textContent = '"夢のマイホーム"本当に大丈夫？';
     
     const newH2 = document.createElement('h2');
-    newH2.textContent = '新築住宅の施工に関する知識をテストします';
+    newH2.textContent = '新築注文住宅の欠陥クイズ';
     h1.after(newH2);
     
     const btn = startScreen.querySelector('.btn-primary');
