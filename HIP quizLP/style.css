@@ -45,14 +45,27 @@ h2 {
     font-size: 18px;
     margin-bottom: 30px;
     line-height: 1.6;
+    white-space: pre-line;
 }
 
-.illustration {
-    width: 150px;
-    height: 200px;
-    margin: 0 auto 30px;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 200"><circle cx="75" cy="60" r="30" fill="%23666"/><rect x="50" y="90" width="50" height="60" rx="10" fill="%23FF9999"/><rect x="40" y="100" width="15" height="40" rx="5" fill="%23FF9999"/><rect x="95" y="100" width="15" height="40" rx="5" fill="%23FF9999"/><rect x="65" y="110" width="20" height="30" rx="5" fill="%23999"/></svg>') no-repeat center;
-    background-size: contain;
+.top-image {
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto 30px;
+}
+
+.top-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.time-estimate-start {
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
 }
 
 .btn-primary {
@@ -288,11 +301,38 @@ h2 {
     max-width: 600px;
 }
 
-.survey-header {
-    text-align: left;
-    margin-bottom: 20px;
+.survey-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
     font-size: 14px;
     color: #666;
+}
+
+.survey-progress-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.survey-progress-dots .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #E0E0E0;
+    transition: all 0.3s ease;
+}
+
+.survey-progress-dots .dot.active {
+    background: #B8A598;
+    transform: scale(1.2);
+}
+
+.survey-progress-dots .dot.completed {
+    background: #B8A598;
+    opacity: 0.5;
 }
 
 .survey-options {
@@ -463,24 +503,25 @@ h2 {
 /* 重要度表示のスタイル */
 .importance-result {
     background: #F5F3F0;
-    padding: 40px;
+    padding: 60px 40px;
     border-radius: 15px;
     margin: 30px auto;
     text-align: center;
-    max-width: 400px;
+    max-width: 600px;
 }
 
 .importance-label {
     color: #7C7569;
     font-size: 18px;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
 }
 
-.importance-level {
+.importance-result h3.importance-level {
     color: #B8A598;
-    font-size: 96px;
+    font-size: 70px !important;
     font-weight: bold;
     margin: 0;
+    line-height: 1;
 }
 
 @media (max-width: 600px) {

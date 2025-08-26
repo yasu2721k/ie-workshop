@@ -1,6 +1,6 @@
 const questions = [
     {
-        question: "実際の新築住宅で、不備や欠陥が見つかる平均数は？",
+        question: "実際の新築住宅で\n不備や欠陥が見つかる平均数は？",
         image: "images/1.png",
         answers: ["1〜3カ所", "4〜9カ所", "10〜17カ所", "18カ所以上"],
         correctAnswer: 3 // D. 18カ所以上
@@ -15,25 +15,19 @@ const questions = [
         question: "この写真の中に断熱性能に関する欠陥があります。どれが不具合か回答してください",
         image: "images/3.png",
         answers: ["断熱材が不足し空洞になっている", "断熱材の厚さが不足している", "断熱材の種類が間違っている"],
-        correctAnswer: 0 // A. 断熱材が不足し空洞になっている
+        correctAnswer: 1 // B. 断熱材の厚さが不足している
     },
     {
-        question: "この写真の中に防水性能に関する欠陥があります。どれが不具合か回答してください",
+        question: "この写真の中に防水性能に関する欠陥があります。いくつ不具合がありますか？",
         image: "images/4.png",
-        answers: ["1", "2", "3"],
-        correctAnswer: 1 // B. 2
+        answers: ["1個", "2個", "3個"],
+        correctAnswer: 1 // B. 2個
     },
     {
         question: "この写真の中に基礎工事に関する欠陥があります。いくつ不具合がありますか？",
         image: "images/5.png",
         answers: ["使用している鉄筋が規定より細い", "配筋を設置する間隔が広すぎる", "補強筋が入っていない"],
         correctAnswer: 2 // C. 補強筋が入っていない
-    },
-    {
-        question: "新築で施工ミスが起こる一番の原因は、次のうちどれ？",
-        image: "images/6.png",
-        answers: ["現場の職人のスキル不足", "施工内容の確認・管理不足", "材料の品質や不良品の混入", "天候などの自然条件"],
-        correctAnswer: 1 // B. 施工内容の確認・管理不足
     }
 ];
 
@@ -304,12 +298,11 @@ function goToTop() {
 window.onload = function() {
     const startScreen = document.getElementById('start-screen');
     const h1 = startScreen.querySelector('h1');
-    h1.textContent = '"夢のマイホーム"本当に大丈夫？';
+    h1.innerHTML = '簡単3分！クイズで分かる<br>"後悔しない家づくり"';
     
-    const newH2 = document.createElement('h2');
-    newH2.textContent = '新築注文住宅の欠陥クイズ';
-    h1.after(newH2);
+    // h2要素を削除（不要な場合）
+    const existingH2 = startScreen.querySelector('h2');
+    if (existingH2) existingH2.remove();
     
-    const btn = startScreen.querySelector('.btn-primary');
-    btn.textContent = '診断を始める';
+    // ボタンテキストはHTMLで直接設定済み
 };

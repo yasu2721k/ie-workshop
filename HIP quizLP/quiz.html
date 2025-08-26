@@ -11,10 +11,11 @@
     <div id="start-screen" class="screen active">
         <div class="container">
             <h1>これで質問は終わりです。<br>お疲れ様でした！<br>結果にお進みください。</h1>
-            <div class="illustration">
-                <img src="girl-illustration.svg" alt="女の子のイラスト">
+            <div class="top-image">
+                <img src="images/top.png" alt="診断クイズイメージ">
             </div>
-            <button class="btn-primary" onclick="startQuiz()">診断結果を見る</button>
+            <button class="btn-primary" onclick="startQuiz()">クイズに挑戦</button>
+            <p class="time-estimate-start">（所要時間2分）</p>
         </div>
     </div>
 
@@ -70,10 +71,16 @@
     <!-- アンケートページ9 -->
     <div id="survey-page-9" class="screen survey-screen">
         <div class="container">
-            <div class="survey-header">
-                <span>ページ9</span>
+            <div class="survey-progress-header">
+                <span>1問目 / 3問中</span>
+                <span class="time-estimate">（所要時間：約30秒）</span>
             </div>
-            <h2>Q1.あなたの家は、どんな構造・工法で建てる予定ですか？</h2>
+            <div class="survey-progress-dots">
+                <span class="dot active"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+            <h2>Q1.あなたの家は、どんな構造・工法で<br>建てる予定ですか？</h2>
             <div class="survey-options">
                 <label class="survey-option">
                     <input type="radio" name="q9-1" value="A">
@@ -100,8 +107,14 @@
     <!-- アンケートページ10 -->
     <div id="survey-page-10" class="screen survey-screen">
         <div class="container">
-            <div class="survey-header">
-                <span>ページ10</span>
+            <div class="survey-progress-header">
+                <span>2問目 / 3問中</span>
+                <span class="time-estimate">（所要時間：約30秒）</span>
+            </div>
+            <div class="survey-progress-dots">
+                <span class="dot completed"></span>
+                <span class="dot active"></span>
+                <span class="dot"></span>
             </div>
             <h2>Q2.住宅会社を教えてください</h2>
             <div class="survey-options">
@@ -169,8 +182,14 @@
     <!-- アンケートページ11 -->
     <div id="survey-page-11" class="screen survey-screen">
         <div class="container">
-            <div class="survey-header">
-                <span>ページ11</span>
+            <div class="survey-progress-header">
+                <span>3問目 / 3問中</span>
+                <span class="time-estimate">（所要時間：約30秒）</span>
+            </div>
+            <div class="survey-progress-dots">
+                <span class="dot completed"></span>
+                <span class="dot completed"></span>
+                <span class="dot active"></span>
             </div>
             <h2>Q3.現在の状況を教えてください</h2>
             <div class="survey-options">
@@ -208,9 +227,6 @@
     <!-- アンケートページ12A -->
     <div id="survey-page-12a" class="screen survey-screen">
         <div class="container">
-            <div class="survey-header">
-                <span>ページ12A</span>
-            </div>
             <h2>診断結果が出ました！</h2>
             <div class="line-registration">
                 <p>LINE登録して結果を見る</p>
@@ -223,9 +239,6 @@
     <!-- アンケートページ12B -->
     <div id="survey-page-12b" class="screen survey-screen">
         <div class="container">
-            <div class="survey-header">
-                <span>ページ12B</span>
-            </div>
             <h2>診断結果が出ました！</h2>
             <div class="importance-result">
                 <p class="importance-label">ホームインスペクション必要度</p>
