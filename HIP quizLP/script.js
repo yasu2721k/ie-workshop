@@ -8,7 +8,7 @@ const questions = [
     {
         question: "この写真の中に耐震性能に関わる欠陥があります。どれが不具合か回答してください",
         image: "images/2.png",
-        answers: ["木材の種類が間違っている", "ビスが傾いて締め込まれている", "ビスが規定量より少ない"],
+        answers: ["木材の種類が間違っている", "ビスが傾いて締め込まれている", "ビスが規定数より少ない"],
         correctAnswer: 1 // B. ビスが傾いて締め込まれている
     },
     {
@@ -52,8 +52,18 @@ function showQuestion() {
     
     const questionImage = document.getElementById('question-image');
     if (question.image && questionImage) {
-        questionImage.src = question.image;
-        questionImage.style.display = 'block';
+        // 5問目（最後の質問）の場合は画像を先に読み込んでから表示
+        if (currentQuestion === questions.length - 1) {
+            const tempImg = new Image();
+            tempImg.onload = function() {
+                questionImage.src = question.image;
+                questionImage.style.display = 'block';
+            };
+            tempImg.src = question.image;
+        } else {
+            questionImage.src = question.image;
+            questionImage.style.display = 'block';
+        }
     } else if (questionImage) {
         questionImage.style.display = 'none';
     }
@@ -96,6 +106,9 @@ function selectAnswer(answerIndex) {
     const answerButtons = document.querySelectorAll('.answer-btn');
     const feedbackElement = document.getElementById('feedback');
     
+    // 現在のスクロール位置を保存
+    const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+    
     answerButtons.forEach(button => button.disabled = true);
     
     if (answerIndex === question.correctAnswer) {
@@ -114,6 +127,24 @@ function selectAnswer(answerIndex) {
         document.getElementById('next-btn').textContent = '結果を見る';
     }
     document.getElementById('next-btn').style.display = 'block';
+    
+    // 5問目の場合はスクロール位置の維持を強化
+    if (currentQuestion === questions.length - 1) {
+        // より長い遅延で確実にスクロール位置を維持
+        setTimeout(() => {
+            window.scrollTo(0, currentScrollPosition);
+        }, 50);
+        
+        // 追加の保険として再度設定
+        setTimeout(() => {
+            window.scrollTo(0, currentScrollPosition);
+        }, 100);
+    } else {
+        // 通常の質問ではすぐに位置を維持
+        setTimeout(() => {
+            window.scrollTo(0, currentScrollPosition);
+        }, 10);
+    }
 }
 
 function nextQuestion() {
@@ -123,6 +154,10 @@ function nextQuestion() {
         showResult();
     } else {
         showQuestion();
+        // 次の質問を表示した後、上部にスクロール
+        setTimeout(() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
     }
 }
 
@@ -146,6 +181,7 @@ let surveyAnswers = {
     page9: null,
     page10: null,
     page11: null,
+    page12: null,
     houseMaker: null
 };
 
@@ -195,31 +231,40 @@ function nextSurveyPage(currentPage) {
         surveyAnswers.page9 = currentInput.value;
     } else if (currentPage === 10) {
         surveyAnswers.page10 = currentInput.value;
+    } else if (currentPage === 11) {
+        surveyAnswers.page11 = currentInput.value;
         
         // ハウスメーカーが選択されている場合、その詳細も保存
         if (currentInput.value === 'A') {
             const selectedMaker = document.querySelector('input[name="house-maker"]:checked');
             surveyAnswers.houseMaker = selectedMaker ? selectedMaker.value : null;
         }
-    } else if (currentPage === 11) {
-        surveyAnswers.page11 = currentInput.value;
+    } else if (currentPage === 12) {
+        surveyAnswers.page12 = currentInput.value;
     }
     
     document.getElementById(`survey-page-${currentPage}`).classList.remove('active');
     
     if (currentPage === 9) {
-        document.getElementById('survey-page-10').classList.add('active');
+        // ページ9で新築注文住宅以外を選んだ場合は専用ページへ
+        if (surveyAnswers.page9 !== 'A') {
+            document.getElementById('survey-non-custom').classList.add('active');
+        } else {
+            document.getElementById('survey-page-10').classList.add('active');
+        }
     } else if (currentPage === 10) {
         document.getElementById('survey-page-11').classList.add('active');
     } else if (currentPage === 11) {
-        // ページ9でB,Cを選んだ人は回答に関わらず12Bへ
-        if (surveyAnswers.page9 === 'B' || surveyAnswers.page9 === 'C') {
+        document.getElementById('survey-page-12').classList.add('active');
+    } else if (currentPage === 12) {
+        // ページ10（構造・工法）でB,Cを選んだ人は回答に関わらず12Bへ
+        if (surveyAnswers.page10 === 'B' || surveyAnswers.page10 === 'C') {
             showSurveyResult12B();
         } 
-        // ページ11の回答に基づいて分岐
-        else if (surveyAnswers.page11 === '着工済み' || 
-            surveyAnswers.page11 === '完成or引っ越し済み' || 
-            surveyAnswers.page11 === '完成or引越し済み') {
+        // ページ12の回答に基づいて分岐
+        else if (surveyAnswers.page12 === '着工済み' || 
+            surveyAnswers.page12 === '完成or引っ越し済み' || 
+            surveyAnswers.page12 === '完成or引越し済み') {
             // 着工済み・完成の場合は12Bへ
             showSurveyResult12B();
         } else {
@@ -237,34 +282,44 @@ function prevSurveyPage(currentPage) {
         document.getElementById('survey-page-9').classList.add('active');
     } else if (currentPage === 11) {
         document.getElementById('survey-page-10').classList.add('active');
+    } else if (currentPage === 12) {
+        document.getElementById('survey-page-11').classList.add('active');
     }
 }
 
 // 12Aページの結果を表示
 function showSurveyResult12A() {
-    // ページ9の回答に基づいてLINEリンクタイプを決定
-    let linkType = 'DEFAULT';
-    if (surveyAnswers.page9 === 'A') {
-        linkType = 'TYPE_A';
-    } else if (surveyAnswers.page9 === 'D') {
-        linkType = 'TYPE_B';
+    // ページ10（構造・工法）の回答に基づいて必要度とLINEリンクを決定
+    let lineUrl = '';
+    
+    if (surveyAnswers.page10 === 'A') {
+        // 木造（在来工法や2×4など）→ 必要度：高
+        lineUrl = 'https://s.lmes.jp/landing-qr/2003392761-9p8BaZdP?uLand=GuoeR4';
+    } else if (surveyAnswers.page10 === 'D') {
+        // 工法がわからない → 必要度：中
+        lineUrl = 'https://s.lmes.jp/landing-qr/2003392761-9p8BaZdP?uLand=wwo7k5';
     }
     
     const page12a = document.getElementById('survey-page-12a');
-    // ここでlinkTypeに応じて異なるLINEリンクを設定可能
-    // 現在は同じリンクを使用
+    const lineButton = document.getElementById('line-button-12a');
+    
+    // LINEボタンにクリックイベントを設定
+    lineButton.onclick = function() {
+        window.open(lineUrl, '_blank');
+    };
+    
     page12a.classList.add('active');
 }
 
 // 12Bページの結果を表示
 function showSurveyResult12B() {
-    // ページ9の回答に基づいて重要度を決定
+    // ページ10（構造・工法）の回答に基づいて重要度を決定
     let importance = '中';
-    if (surveyAnswers.page9 === 'A') {
+    if (surveyAnswers.page10 === 'A') {
         importance = '高';
-    } else if (surveyAnswers.page9 === 'B' || surveyAnswers.page9 === 'C') {
+    } else if (surveyAnswers.page10 === 'B' || surveyAnswers.page10 === 'C') {
         importance = '低';
-    } else if (surveyAnswers.page9 === 'D') {
+    } else if (surveyAnswers.page10 === 'D') {
         importance = '中';
     }
     
@@ -291,18 +346,38 @@ function goToTop() {
         page9: null,
         page10: null,
         page11: null,
+        page12: null,
         houseMaker: null
     };
+}
+
+// 画像を事前に読み込む関数
+function preloadImages() {
+    const imagePaths = [
+        'images/1.png',
+        'images/2.png',
+        'images/3.png',
+        'images/4.png',
+        'images/5.png'
+    ];
+    
+    imagePaths.forEach(path => {
+        const img = new Image();
+        img.src = path;
+    });
 }
 
 window.onload = function() {
     const startScreen = document.getElementById('start-screen');
     const h1 = startScreen.querySelector('h1');
-    h1.innerHTML = '簡単3分！クイズで分かる<br>"後悔しない家づくり"';
+    h1.innerHTML = '簡単60秒!あなたの家は大丈夫？<br>新築不具合事例クイズ';
     
     // h2要素を削除（不要な場合）
     const existingH2 = startScreen.querySelector('h2');
     if (existingH2) existingH2.remove();
     
     // ボタンテキストはHTMLで直接設定済み
+    
+    // 画像を事前に読み込む
+    preloadImages();
 };
