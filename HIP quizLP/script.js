@@ -40,6 +40,7 @@ function startQuiz() {
     document.getElementById('quiz-screen').classList.add('active');
     currentQuestion = 0;
     score = 0;
+    window.location.hash = 'step1';
     showQuestion();
 }
 
@@ -151,8 +152,10 @@ function nextQuestion() {
     currentQuestion++;
     
     if (currentQuestion >= questions.length) {
+        window.location.hash = 'step6';  // クイズ5問終了後は結果画面（step6）
         showResult();
     } else {
+        window.location.hash = `step${currentQuestion + 1}`;  // step2, step3, step4, step5
         showQuestion();
         // 次の質問を表示した後、上部にスクロール
         setTimeout(() => {
@@ -189,6 +192,7 @@ let surveyAnswers = {
 function startSurvey() {
     document.getElementById('result-screen').classList.remove('active');
     document.getElementById('survey-page-9').classList.add('active');
+    window.location.hash = 'step7';  // アンケート1問目
 }
 
 // ハウスメーカーリストの表示切り替え
@@ -248,13 +252,17 @@ function nextSurveyPage(currentPage) {
     if (currentPage === 9) {
         // ページ9で新築注文住宅以外を選んだ場合は専用ページへ
         if (surveyAnswers.page9 !== 'A') {
+            window.location.hash = 'step-end';  // 対象外の人向けページ
             document.getElementById('survey-non-custom').classList.add('active');
         } else {
+            window.location.hash = 'step8';  // アンケート2問目
             document.getElementById('survey-page-10').classList.add('active');
         }
     } else if (currentPage === 10) {
+        window.location.hash = 'step9';  // アンケート3問目
         document.getElementById('survey-page-11').classList.add('active');
     } else if (currentPage === 11) {
+        window.location.hash = 'step10';  // アンケート4問目
         document.getElementById('survey-page-12').classList.add('active');
     } else if (currentPage === 12) {
         // ページ10（構造・工法）でB,Cを選んだ人は回答に関わらず12Bへ
@@ -293,10 +301,12 @@ function showSurveyResult12A() {
     let lineUrl = '';
     
     if (surveyAnswers.page10 === 'A') {
-        // 木造（在来工法や2×4など）→ 必要度：高
+        // 木造（在来工法や2×4など）→ 必要度：高（パターンA）
+        window.location.hash = 'step11-A';
         lineUrl = 'https://s.lmes.jp/landing-qr/2003392761-9p8BaZdP?uLand=GuoeR4';
     } else if (surveyAnswers.page10 === 'D') {
-        // 工法がわからない → 必要度：中
+        // 工法がわからない → 必要度：中（パターンB）
+        window.location.hash = 'step11-B';
         lineUrl = 'https://s.lmes.jp/landing-qr/2003392761-9p8BaZdP?uLand=wwo7k5';
     }
     
@@ -313,6 +323,8 @@ function showSurveyResult12A() {
 
 // 12Bページの結果を表示
 function showSurveyResult12B() {
+    window.location.hash = 'survey-result-importance';
+    
     // ページ10（構造・工法）の回答に基づいて重要度を決定
     let importance = '中';
     if (surveyAnswers.page10 === 'A') {
@@ -331,6 +343,9 @@ function showSurveyResult12B() {
 
 // TOPへ戻る機能
 function goToTop() {
+    // URLハッシュをクリア
+    window.location.hash = '';
+    
     // すべての画面を非表示
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
@@ -367,6 +382,26 @@ function preloadImages() {
     });
 }
 
+// URLハッシュの変更を監視
+window.addEventListener('hashchange', function() {
+    handleHashChange();
+});
+
+// ページ読み込み時のハッシュ処理
+function handleHashChange() {
+    const hash = window.location.hash.substring(1);
+    
+    if (!hash || hash === '') {
+        // ホーム画面を表示
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById('start-screen').classList.add('active');
+    }
+    // ハッシュに基づいて適切な画面を表示
+    // ※ブラウザバックで戻った時の対応
+}
+
 window.onload = function() {
     const startScreen = document.getElementById('start-screen');
     const h1 = startScreen.querySelector('h1');
@@ -380,4 +415,9 @@ window.onload = function() {
     
     // 画像を事前に読み込む
     preloadImages();
+    
+    // 初期ハッシュの処理
+    if (window.location.hash) {
+        handleHashChange();
+    }
 };
