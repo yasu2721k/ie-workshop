@@ -1,0 +1,68 @@
+{
+  "common": {
+    "back": "戻る",
+    "retry": "もう一度診断する"
+  },
+  "landing": {
+    "title1": "あなたの目力、",
+    "title2": "実は肌で損してる？",
+    "subtitle": "AIが目元映え度を診断",
+    "cta": "診断をスタート"
+  },
+  "camera": {
+    "instruction": "顔を枠に合わせて撮影してください",
+    "capture": "撮影する",
+    "error": {
+      "denied": "カメラへのアクセスが拒否されました。設定からカメラの使用を許可してください。",
+      "unsupported": "お使いのブラウザはカメラに対応していません。",
+      "noFace": "顔の検出に失敗しました。再度お試しください"
+    }
+  },
+  "analyzing": {
+    "step1": "顔を認識しています...",
+    "step2": "目元の明るさを測定中...",
+    "step3": "シワレベルを解析中...",
+    "complete": "解析完了！",
+    "step": {
+      "init": "顔を認識中...",
+      "darkCircles": "クマレベルを分析中...",
+      "wrinkles": "シワを検出中...",
+      "firmness": "ハリ・潤いをチェック中...",
+      "age": "目元年齢を算出中...",
+      "complete": "診断完了！✨"
+    }
+  },
+  "gate": {
+    "title": "解析完了！",
+    "description": "詳細な結果とあなたに合うケア商品を見るには、公式LINEを友だち追加してください",
+    "cta": "LINEで結果を見る"
+  },
+  "result": {
+    "title": "診断結果",
+    "score": "目元映え度",
+    "points": "点",
+    "type": "タイプ",
+    "recommend": "おすすめ商品",
+    "overallScore": "総合スコア",
+    "detailAnalysis": "詳細分析",
+    "primaryConcern": "改善ポイント",
+    "eyeAge": "目元年齢",
+    "retry": "もう一度診断する",
+    "darkCircles": {
+      "name": "クマ・くすみ",
+      "message": "目力は完璧ですが、目の下の「お疲れ影」が−20%の印象です",
+      "product": {
+        "name": "トーンアップ・アイクリーム",
+        "description": "韓国アイドルのような水光肌へ導く"
+      }
+    },
+    "wrinkles": {
+      "name": "乾燥小ジワ",
+      "message": "カールは綺麗ですが、目尻の乾燥サインが年齢を感じさせています",
+      "product": {
+        "name": "アンチエイジング美容液",
+        "description": "寝ている間に集中補修"
+      }
+    }
+  }
+}

@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+:root {
+  /* 新しいカラーパレット - 大人っぽく落ち着いた色合い */
+  /* ベース */
+  --color-cream: #F5F3EF;
+  --color-beige: #E8E4DC;
+  --color-sand: #D4CFC4;
+
+  /* テキスト */
+  --color-charcoal: #2C2C2C;
+  --color-stone: #6B6B6B;
+  --color-muted: #9B9B9B;
+
+  /* アクセント */
+  --color-taupe: #8B7E74;
+  --color-olive: #7A8B6E;
+  --color-terracotta: #B87A5E;
+
+  /* UI要素 */
+  --white: #FFFFFF;
+  --black: #1A1A1A;
+
+  /* Neutral */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-500: #6b7280;
+  --gray-700: #374151;
+  --gray-900: #111827;
+
+  /* Accent */
+  --line-green: #06C755;
+
+  /* Typography */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+
+  /* Font Weight */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+
+  /* Background */
+  --background: #F5F3EF;
+  --foreground: #2C2C2C;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cream: var(--color-cream);
+  --color-beige: var(--color-beige);
+  --color-sand: var(--color-sand);
+  --color-charcoal: var(--color-charcoal);
+  --color-stone: var(--color-stone);
+  --color-taupe: var(--color-taupe);
+  --color-line-green: var(--line-green);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Noto Sans JP', 'Pretendard', sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes scan {
+  0% { top: 0; opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Utility Classes */
+.btn-primary {
+  background: var(--color-charcoal);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #3D3D3D;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(44, 44, 44, 0.2);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-line {
+  background: var(--line-green);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-line:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(6, 199, 85, 0.4);
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--color-beige);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-charcoal) 0%, var(--color-taupe) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-scan {
+  animation: scan 2s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Safe area for mobile */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-sand);
+  border-radius: 2px;
+}
+
+/* Focus styles */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-taupe);
+  outline-offset: 2px;
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  .btn-line:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Typography for Korean */
+html[lang="ko"] body {
+  font-family: 'Pretendard', 'Noto Sans JP', sans-serif;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-beige) 25%,
+    var(--color-cream) 50%,
+    var(--color-beige) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

@@ -1,0 +1,68 @@
+{
+  "common": {
+    "back": "뒤로",
+    "retry": "다시 진단하기"
+  },
+  "landing": {
+    "title1": "당신의 눈빛,",
+    "title2": "피부 때문에 손해보고 있나요?",
+    "subtitle": "AI가 눈가 매력도를 진단",
+    "cta": "진단 시작하기"
+  },
+  "camera": {
+    "instruction": "얼굴을 프레임에 맞춰 촬영해주세요",
+    "capture": "촬영하기",
+    "error": {
+      "denied": "카메라 접근이 거부되었습니다. 설정에서 카메라 사용을 허용해주세요.",
+      "unsupported": "사용 중인 브라우저는 카메라를 지원하지 않습니다.",
+      "noFace": "얼굴 인식에 실패했습니다. 다시 시도해주세요"
+    }
+  },
+  "analyzing": {
+    "step1": "얼굴을 인식하고 있습니다...",
+    "step2": "눈가 밝기를 측정 중...",
+    "step3": "주름 레벨을 분석 중...",
+    "complete": "분석 완료!",
+    "step": {
+      "init": "얼굴 인식 중...",
+      "darkCircles": "다크서클 분석 중...",
+      "wrinkles": "주름 검출 중...",
+      "firmness": "탄력・수분 체크 중...",
+      "age": "눈가 나이 산출 중...",
+      "complete": "진단 완료! ✨"
+    }
+  },
+  "gate": {
+    "title": "분석 완료!",
+    "description": "상세한 결과와 맞춤 케어 상품을 보려면 공식 LINE을 친구 추가해주세요",
+    "cta": "LINE으로 결과 보기"
+  },
+  "result": {
+    "title": "진단 결과",
+    "score": "눈가 매력도",
+    "points": "점",
+    "type": "타입",
+    "recommend": "추천 상품",
+    "overallScore": "종합 점수",
+    "detailAnalysis": "상세 분석",
+    "primaryConcern": "개선 포인트",
+    "eyeAge": "눈가 나이",
+    "retry": "다시 진단하기",
+    "darkCircles": {
+      "name": "다크서클・칙칙함",
+      "message": "눈빛은 완벽하지만 눈 아래 '피로 그림자'가 -20% 인상입니다",
+      "product": {
+        "name": "톤업 아이크림",
+        "description": "한국 아이돌 같은 물광 피부로 가꿔줍니다"
+      }
+    },
+    "wrinkles": {
+      "name": "건조 잔주름",
+      "message": "컬은 예쁘지만 눈꼬리 건조 신호가 나이를 느끼게 합니다",
+      "product": {
+        "name": "안티에이징 세럼",
+        "description": "자는 동안 집중 보수"
+      }
+    }
+  }
+}
