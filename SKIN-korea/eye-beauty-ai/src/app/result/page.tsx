@@ -114,13 +114,6 @@ export default function ResultPage() {
                   {language === 'ja' ? '歳' : '세'}
                 </span>
               </div>
-              <p className="text-sm text-[#888] mt-1">
-                {eyeAge.difference > 0
-                  ? `実年齢 +${eyeAge.difference}${language === 'ja' ? '歳' : '세'}`
-                  : eyeAge.difference < 0
-                  ? `実年齢 ${eyeAge.difference}${language === 'ja' ? '歳' : '세'}`
-                  : language === 'ja' ? '実年齢通り' : '실제 나이와 동일'}
-              </p>
             </div>
           </div>
         </motion.div>
