@@ -77,14 +77,19 @@ export function useCamera(): UseCameraReturn {
   }, []);
 
   const captureImage = useCallback((): CaptureResult | null => {
-    if (!videoRef.current || !canvasRef.current || !isReady) {
+    if (!videoRef.current || !isReady) {
       return null;
     }
 
     const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
 
+    // canvasRefが利用できない場合は一時的なcanvasを作成
+    let canvas = canvasRef.current;
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+    }
+
+    const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
     // Set canvas size to match video
@@ -101,7 +106,6 @@ export function useCamera(): UseCameraReturn {
     // Reset transform
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-    // Return image data with dimensions
     return {
       imageData: canvas.toDataURL('image/jpeg', 0.9),
       width: canvas.width,

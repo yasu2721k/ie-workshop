@@ -1,38 +1,55 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { Check, X } from 'lucide-react';
+import { FacePositionStatus } from '@/lib/facePositionChecker';
 
 interface FaceGuideProps {
   isActive: boolean;
+  faceStatus?: FacePositionStatus | null;
+  isDetected?: boolean;
+  countdown?: number | null;
 }
 
-export default function FaceGuide({ isActive }: FaceGuideProps) {
+export default function FaceGuide({ isActive, faceStatus, isDetected, countdown }: FaceGuideProps) {
+  // 全ての条件がOKか
+  const isAllOK = faceStatus &&
+    faceStatus.isPositionOK &&
+    faceStatus.isSizeOK &&
+    faceStatus.isFrontFacing;
+
+  // ガイドの色を決定
+  const getGuideColor = () => {
+    if (!isDetected) return 'rgba(255, 255, 255, 0.5)';
+    if (isAllOK) return '#4ADE80'; // 緑
+    return '#FFFFFF'; // 白
+  };
+
   return (
     <div className="absolute inset-0 pointer-events-none">
-      {/* Darkened corners */}
+      {/* Darkened area outside oval */}
       <div className="absolute inset-0">
-        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <svg className="w-full h-full" viewBox="0 0 100 133" preserveAspectRatio="none">
           <defs>
-            <mask id="faceMask">
-              <rect width="100" height="100" fill="white" />
-              <ellipse cx="50" cy="45" rx="28" ry="35" fill="black" />
+            <mask id="faceOvalMask">
+              <rect width="100" height="133" fill="white" />
+              <ellipse cx="50" cy="58" rx="38" ry="48" fill="black" />
             </mask>
           </defs>
           <rect
             width="100"
-            height="100"
-            fill="rgba(0,0,0,0.5)"
-            mask="url(#faceMask)"
+            height="133"
+            fill="rgba(0,0,0,0.6)"
+            mask="url(#faceOvalMask)"
           />
         </svg>
       </div>
 
-      {/* Face Outline */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-5%' }}>
+      {/* Oval Guide */}
+      <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-8%' }}>
         <motion.div
-          animate={isActive ? {
-            scale: [1, 1.02, 1],
-            opacity: [0.6, 1, 0.6],
+          animate={isActive && !isAllOK ? {
+            opacity: [0.7, 1, 0.7],
           } : {}}
           transition={{
             duration: 2,
@@ -40,85 +57,105 @@ export default function FaceGuide({ isActive }: FaceGuideProps) {
             ease: 'easeInOut',
           }}
           className="relative"
-          style={{ width: '56%', aspectRatio: '0.8' }}
+          style={{ width: '76%', aspectRatio: '0.79' }}
         >
           {/* Main oval guide */}
-          <div
-            className={`
-              absolute inset-0 rounded-full border-2
-              ${isActive ? 'border-pink-400' : 'border-white/50'}
-              transition-colors duration-300
-            `}
-            style={{ borderRadius: '50%' }}
-          />
-
-          {/* Corner markers */}
-          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 125">
-            {/* Top left */}
-            <path
-              d="M 20 10 L 10 10 L 10 25"
+          <svg className="w-full h-full" viewBox="0 0 100 126">
+            <ellipse
+              cx="50"
+              cy="63"
+              rx="48"
+              ry="60"
               fill="none"
-              stroke={isActive ? '#f472b6' : 'rgba(255,255,255,0.5)'}
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            {/* Top right */}
-            <path
-              d="M 80 10 L 90 10 L 90 25"
-              fill="none"
-              stroke={isActive ? '#f472b6' : 'rgba(255,255,255,0.5)'}
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            {/* Bottom left */}
-            <path
-              d="M 10 100 L 10 115 L 20 115"
-              fill="none"
-              stroke={isActive ? '#f472b6' : 'rgba(255,255,255,0.5)'}
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            {/* Bottom right */}
-            <path
-              d="M 90 100 L 90 115 L 80 115"
-              fill="none"
-              stroke={isActive ? '#f472b6' : 'rgba(255,255,255,0.5)'}
-              strokeWidth="2"
-              strokeLinecap="round"
+              stroke={getGuideColor()}
+              strokeWidth="2.5"
+              strokeDasharray={isAllOK ? 'none' : '8,4'}
             />
           </svg>
-
-          {/* Eye area indicators */}
-          <div className="absolute left-[15%] right-[15%] top-[35%] flex justify-between px-2">
-            <motion.div
-              animate={isActive ? { opacity: [0.5, 1, 0.5] } : {}}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-8 h-3 border border-pink-300/60 rounded-full"
-            />
-            <motion.div
-              animate={isActive ? { opacity: [0.5, 1, 0.5] } : {}}
-              transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-              className="w-8 h-3 border border-pink-300/60 rounded-full"
-            />
-          </div>
         </motion.div>
       </div>
 
-      {/* Scanning line effect when active */}
-      {isActive && (
-        <motion.div
-          className="absolute left-[22%] right-[22%] h-0.5 bg-gradient-to-r from-transparent via-pink-400 to-transparent"
-          style={{ top: '30%' }}
-          animate={{
-            top: ['30%', '55%', '30%'],
-            opacity: [0, 1, 0],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
+      {/* Status Indicators */}
+      <div className="absolute top-4 left-0 right-0 px-3">
+        <div className="flex justify-center gap-2">
+          {/* ポジション（一番左） */}
+          <StatusBadge
+            label="ポジション"
+            isOK={faceStatus?.isPositionOK && faceStatus?.isSizeOK}
+          />
+
+          {/* 向き */}
+          <StatusBadge
+            label="向き"
+            isOK={faceStatus?.isFrontFacing ?? false}
+          />
+
+          {/* 明るさ - 常にOK表示（簡易版） */}
+          <StatusBadge
+            label="明るさ"
+            isOK={true}
+          />
+        </div>
+      </div>
+
+      {/* Countdown Display */}
+      {countdown !== null && countdown !== undefined && (
+        <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: '-8%' }}>
+          <motion.div
+            key={countdown}
+            initial={{ scale: 1.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.5, opacity: 0 }}
+            className="text-8xl font-bold text-white drop-shadow-lg"
+          >
+            {countdown}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Guide Message */}
+      {!countdown && faceStatus?.message && (
+        <div className="absolute bottom-24 left-0 right-0 px-4">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center text-white text-base font-medium"
+          >
+            {faceStatus.message}
+          </motion.p>
+        </div>
+      )}
+
+      {/* 顔未検出時のメッセージ */}
+      {!countdown && !isDetected && (
+        <div className="absolute bottom-24 left-0 right-0 px-4">
+          <p className="text-center text-white text-base font-medium">
+            顔を中心に合わせてください
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ステータスバッジコンポーネント（○×表示）
+interface StatusBadgeProps {
+  label: string;
+  isOK?: boolean;
+}
+
+function StatusBadge({ label, isOK }: StatusBadgeProps) {
+  return (
+    <div className={`px-3 py-1.5 rounded-full flex items-center gap-2 ${
+      isOK ? 'bg-white' : 'bg-[#1A1A1A] border border-white/50'
+    }`}>
+      <span className={`text-xs font-medium ${isOK ? 'text-[#1A1A1A]' : 'text-white'}`}>
+        {label}
+      </span>
+      {isOK ? (
+        <Check className="w-4 h-4 text-green-600" strokeWidth={3} />
+      ) : (
+        <X className="w-4 h-4 text-red-400" strokeWidth={3} />
       )}
     </div>
   );

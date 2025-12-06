@@ -21,7 +21,7 @@ export default function CameraPage() {
     router.push(ROUTES.ANALYZING);
   }, [setCapturedImage, router]);
 
-  const handleError = useCallback((error: string) => {
+  const handleError = useCallback((error: string | null) => {
     setErrorMessage(error);
   }, []);
 

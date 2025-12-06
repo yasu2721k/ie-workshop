@@ -26,6 +26,20 @@ export interface EyeAge {
   message: string;           // 表示メッセージ
 }
 
+export interface DarkCircleObservation {
+  darkCircleType: 'blue' | 'brown' | 'black' | 'red' | 'mixed' | 'none';
+  darkCircleTypeJa: string;
+  mainCause: string;
+  subCause: string | null;
+  skinCondition: string;
+}
+
+export interface DetailedAnalysis {
+  darkCircles: string;
+  wrinkles: string;
+  firmness: string;
+}
+
 export interface DiagnosisResult {
   scores: DiagnosisScores;
   eyeAge: EyeAge;
@@ -33,6 +47,8 @@ export interface DiagnosisResult {
   primaryConcern: keyof DiagnosisScores;  // 最も気になる項目
   recommendation: string;    // おすすめケアの方向性
   analysis?: string;         // 総評
+  observation?: DarkCircleObservation | null;
+  detailedAnalysis?: DetailedAnalysis | null;
   eyePositions?: EyePositions;
 }
 

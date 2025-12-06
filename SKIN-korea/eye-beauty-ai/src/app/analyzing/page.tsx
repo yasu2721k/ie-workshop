@@ -36,6 +36,7 @@ export default function AnalyzingPage() {
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // ステップ進行
   useEffect(() => {
@@ -92,6 +93,7 @@ export default function AnalyzingPage() {
       }
 
       try {
+        setShowError(false);
         const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -106,15 +108,17 @@ export default function AnalyzingPage() {
           const errorData = await response.json();
           if (errorData.error === 'NO_FACE_DETECTED') {
             setErrorMessage(t('camera.error.noFace'));
+          } else if (errorData.error === 'API key not configured') {
+            setErrorMessage('APIキーが設定されていません');
           } else {
-            setErrorMessage('分析中にエラーが発生しました');
+            setErrorMessage(errorData.details || errorData.error || '分析中にエラーが発生しました');
           }
           setShowError(true);
           return;
         }
 
         const result: DiagnosisResult = await response.json();
-        console.log('Claude Vision analysis result:', result);
+        console.log('Gemini analysis result:', result);
 
         setDiagnosisResult(result);
         setAnalysisData({
@@ -123,13 +127,13 @@ export default function AnalyzingPage() {
         setAnalysisComplete(true);
       } catch (error) {
         console.error('Analysis failed:', error);
-        setErrorMessage('分析中にエラーが発生しました');
+        setErrorMessage(error instanceof Error ? error.message : '分析中にエラーが発生しました');
         setShowError(true);
       }
     };
 
     analyze();
-  }, [capturedImage, forceType, imageDimensions, setDiagnosisResult, setAnalysisData, router, t]);
+  }, [capturedImage, forceType, imageDimensions, setDiagnosisResult, setAnalysisData, router, t, retryCount]);
 
   // 完了後の遷移
   useEffect(() => {
@@ -234,18 +238,40 @@ export default function AnalyzingPage() {
       <Modal
         isOpen={showError}
         onClose={handleRetry}
-        title={t('camera.error.noFace')}
+        title="分析エラー"
       >
         <div className="text-center">
           <p className="text-[#6B6B6B] mb-6">
             {errorMessage || t('camera.error.noFace')}
           </p>
-          <button
-            onClick={handleRetry}
-            className="w-full py-3 bg-[#2C2C2C] text-white rounded-xl font-medium hover:bg-[#3D3D3D] transition-colors"
-          >
-            撮り直す
-          </button>
+          {retryCount < 3 ? (
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setRetryCount(prev => prev + 1);
+                  setShowError(false);
+                  setCurrentStep(0);
+                  setProgress(0);
+                }}
+                className="w-full py-3 bg-[#2C2C2C] text-white rounded-xl font-medium hover:bg-[#3D3D3D] transition-colors"
+              >
+                再試行 ({retryCount + 1}/3)
+              </button>
+              <button
+                onClick={handleRetry}
+                className="w-full py-3 bg-[#E8E4DC] text-[#2C2C2C] rounded-xl font-medium hover:bg-[#D4CFC4] transition-colors"
+              >
+                撮り直す
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleRetry}
+              className="w-full py-3 bg-[#2C2C2C] text-white rounded-xl font-medium hover:bg-[#3D3D3D] transition-colors"
+            >
+              撮り直す
+            </button>
+          )}
         </div>
       </Modal>
     </div>

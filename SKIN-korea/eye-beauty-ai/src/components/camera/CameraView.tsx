@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useCamera, CaptureResult } from '@/hooks/useCamera';
@@ -10,10 +10,11 @@ import { FaceMeshOverlay } from './FaceMeshOverlay';
 import FaceGuide from './FaceGuide';
 import { getEyePositions } from '@/lib/eyeAnalyzer';
 import { EyePositions } from '@/types/diagnosis';
+import { checkFacePosition, FacePositionStatus } from '@/lib/facePositionChecker';
 
 interface CameraViewProps {
   onCapture: (result: CaptureResult & { eyePositions?: EyePositions }) => void;
-  onError: (error: string) => void;
+  onError: (error: string | null) => void;
 }
 
 export default function CameraView({ onCapture, onError }: CameraViewProps) {
@@ -21,23 +22,37 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   const { videoRef, canvasRef, isReady, error, startCamera, captureImage } = useCamera();
   const { landmarks, isDetected, processFrame, isLoading: isFaceMeshLoading } = useFaceMesh(videoRef);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [videoAspect, setVideoAspect] = useState({ videoWidth: 0, videoHeight: 0 });
   const [currentEyePositions, setCurrentEyePositions] = useState<EyePositions | null>(null);
+  const [faceStatus, setFaceStatus] = useState<FacePositionStatus | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [capturedPreview, setCapturedPreview] = useState<string | null>(null);
+  const [autoShutterCountdown, setAutoShutterCountdown] = useState<number | null>(null);
+  const [isWarmupComplete, setIsWarmupComplete] = useState(false);
+  const autoShutterTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // カメラ開始
   useEffect(() => {
     startCamera();
   }, [startCamera]);
 
-  // エラーハンドリング
+  // エラーハンドリング - カメラの状態に応じてエラーを通知/クリア
   useEffect(() => {
-    if (error) {
+    if (isReady) {
+      // カメラが成功したらエラーをクリア
+      onError(null);
+      // カメラ準備完了後、2秒待ってからウォームアップ完了とする
+      const warmupTimer = setTimeout(() => {
+        setIsWarmupComplete(true);
+      }, 2000);
+      return () => clearTimeout(warmupTimer);
+    } else if (error) {
       const errorKey = error === 'denied' ? 'camera.error.denied' :
                        error === 'unsupported' ? 'camera.error.unsupported' :
                        'camera.error.denied';
       onError(t(errorKey));
     }
-  }, [error, onError, t]);
+  }, [error, isReady, onError, t]);
 
   // フレームごとに顔検出を実行
   useEffect(() => {
@@ -57,87 +72,206 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
     };
   }, [isReady, processFrame]);
 
-  // ビデオ表示サイズ取得（CSSサイズではなく実際のピクセルサイズ）
+  // ビデオ表示サイズ取得
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const updateDimensions = () => {
-      if (video) {
-        const rect = video.getBoundingClientRect();
+      if (video && video.parentElement) {
+        // 親コンテナのサイズを使用（object-coverに対応）
+        const container = video.parentElement;
+        const rect = container.getBoundingClientRect();
         setDimensions({
           width: rect.width,
           height: rect.height,
         });
+        // ビデオの元の解像度も保存
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          setVideoAspect({
+            videoWidth: video.videoWidth,
+            videoHeight: video.videoHeight,
+          });
+        }
       }
     };
 
     video.addEventListener('loadedmetadata', updateDimensions);
+    video.addEventListener('playing', updateDimensions);
     // リサイズ時も更新
     window.addEventListener('resize', updateDimensions);
     // 初期値も設定
-    if (video.videoWidth > 0) {
-      updateDimensions();
-    }
+    updateDimensions();
+    // 少し遅延して再度更新（レイアウト完了後）
+    const timeoutId = setTimeout(updateDimensions, 100);
 
     return () => {
       video.removeEventListener('loadedmetadata', updateDimensions);
+      video.removeEventListener('playing', updateDimensions);
       window.removeEventListener('resize', updateDimensions);
+      clearTimeout(timeoutId);
     };
-  }, [videoRef]);
+  }, [videoRef, isReady]);
 
-  // 目の位置を更新
+  // 目の位置と顔のステータスを更新
   useEffect(() => {
-    if (landmarks && isDetected) {
+    if (landmarks && isDetected && dimensions.width > 0) {
       const positions = getEyePositions(landmarks);
       setCurrentEyePositions(positions);
-    }
-  }, [landmarks, isDetected]);
 
-  const handleCapture = useCallback(async () => {
+      // 顔の位置・サイズをチェック
+      const status = checkFacePosition(landmarks, dimensions.width, dimensions.height);
+      setFaceStatus(status);
+    } else {
+      setFaceStatus(null);
+    }
+  }, [landmarks, isDetected, dimensions]);
+
+  const handleCapture = useCallback(() => {
     if (isCapturing) return;
+
     setIsCapturing(true);
-    try {
-      const result = captureImage();
-      if (result) {
+
+    // タイマーをクリア
+    setAutoShutterCountdown(null);
+    if (autoShutterTimerRef.current) {
+      clearInterval(autoShutterTimerRef.current);
+      autoShutterTimerRef.current = null;
+    }
+
+    // 即座に撮影
+    const result = captureImage();
+
+    if (result) {
+      // 撮影画像をプレビューとして表示（画面をフリーズ）
+      setCapturedPreview(result.imageData);
+
+      // 少し待ってから遷移（フラッシュエフェクト用）
+      setTimeout(() => {
         onCapture({
           ...result,
           eyePositions: currentEyePositions || undefined,
         });
-      }
-    } finally {
+      }, 300);
+    } else {
       setIsCapturing(false);
     }
   }, [captureImage, onCapture, currentEyePositions, isCapturing]);
+
+  // 自動シャッター条件チェック
+  const isAllConditionsMet = !!(faceStatus &&
+    faceStatus.isPositionOK &&
+    faceStatus.isSizeOK &&
+    faceStatus.isFrontFacing &&
+    isDetected &&
+    !isCapturing);
+
+
+  // 自動シャッターのカウントダウン処理用ref
+  const countdownRef = useRef<number>(0);
+  const handleCaptureRef = useRef(handleCapture);
+  handleCaptureRef.current = handleCapture;
+
+  // 自動シャッター開始・停止の制御
+  useEffect(() => {
+    // 条件が満たされた場合、カウントダウン開始
+    if (isAllConditionsMet && isWarmupComplete && autoShutterTimerRef.current === null) {
+      // カウントダウン開始
+      countdownRef.current = 3;
+      setAutoShutterCountdown(3);
+
+      autoShutterTimerRef.current = setInterval(() => {
+        countdownRef.current -= 1;
+
+        if (countdownRef.current > 0) {
+          setAutoShutterCountdown(countdownRef.current);
+        } else {
+          // カウント0で撮影
+          if (autoShutterTimerRef.current) {
+            clearInterval(autoShutterTimerRef.current);
+            autoShutterTimerRef.current = null;
+          }
+          setAutoShutterCountdown(null);
+          handleCaptureRef.current();
+        }
+      }, 1000);
+    }
+
+    // 条件が満たされなくなった場合のみリセット（カウントダウン中に条件が外れた場合）
+    if (!isAllConditionsMet && autoShutterTimerRef.current !== null) {
+      clearInterval(autoShutterTimerRef.current);
+      autoShutterTimerRef.current = null;
+      countdownRef.current = 0;
+      setAutoShutterCountdown(null);
+    }
+  }, [isAllConditionsMet, isWarmupComplete]);
+
+  // クリーンアップ
+  useEffect(() => {
+    return () => {
+      if (autoShutterTimerRef.current) {
+        clearInterval(autoShutterTimerRef.current);
+        autoShutterTimerRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className="relative w-full max-w-md mx-auto">
       {/* Camera Preview Container */}
       <div className="relative aspect-[3/4] bg-gray-800 rounded-3xl overflow-hidden shadow-2xl">
-        {/* Video Element */}
+        {/* Video Element - 撮影後は非表示 */}
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
+          className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] ${capturedPreview ? 'hidden' : ''}`}
         />
+
+        {/* 撮影後のプレビュー画像（フリーズ効果） */}
+        {capturedPreview && (
+          <img
+            src={capturedPreview}
+            alt="撮影画像"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+
+        {/* フラッシュエフェクト */}
+        {capturedPreview && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 bg-white"
+          />
+        )}
 
         {/* Hidden Canvas for Capture */}
         <canvas ref={canvasRef} className="hidden" />
 
-        {/* Face Mesh Overlay */}
-        {landmarks && dimensions.width > 0 && (
+        {/* Face Mesh Overlay - 撮影後は非表示 */}
+        {!capturedPreview && landmarks && dimensions.width > 0 && (
           <FaceMeshOverlay
             landmarks={landmarks}
             width={dimensions.width}
             height={dimensions.height}
+            videoWidth={videoAspect.videoWidth}
+            videoHeight={videoAspect.videoHeight}
             isDetected={isDetected}
           />
         )}
 
-        {/* Face Guide Overlay（顔未検出時のみ） */}
-        {!isDetected && <FaceGuide isActive={isReady} />}
+        {/* Face Guide Overlay（常に表示、撮影後は非表示） */}
+        {!capturedPreview && (
+          <FaceGuide
+            isActive={isReady}
+            faceStatus={faceStatus}
+            isDetected={isDetected}
+            countdown={autoShutterCountdown}
+          />
+        )}
 
         {/* Loading State */}
         {(!isReady || isFaceMeshLoading) && !error && (
@@ -150,8 +284,8 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
           </div>
         )}
 
-        {/* Error State */}
-        {error && (
+        {/* Error State - カメラが動作中でない場合のみ表示 */}
+        {error && !isReady && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-900/90 p-6">
             <div className="text-center">
               <div className="text-4xl mb-4">📷</div>
@@ -169,10 +303,10 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleCapture}
-          disabled={!isReady || !isDetected || isCapturing}
+          disabled={!isReady || !isDetected || isCapturing || !faceStatus?.isSizeOK}
           className={`
             relative w-20 h-20 rounded-full
-            ${isReady && isDetected && !isCapturing
+            ${isReady && isDetected && !isCapturing && faceStatus?.isSizeOK
               ? 'bg-white shadow-lg'
               : 'bg-gray-600'
             }
@@ -192,13 +326,13 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
               {/* Inner Circle */}
               <div className={`
                 w-16 h-16 rounded-full border-4 border-[#2C2C2C]
-                ${isReady && isDetected ? 'bg-white/20' : 'bg-gray-500/20'}
+                ${isReady && isDetected && faceStatus?.isSizeOK ? 'bg-white/20' : 'bg-gray-500/20'}
               `} />
 
               {/* Pulse Animation when ready */}
-              {isReady && isDetected && (
+              {isReady && isDetected && faceStatus?.isSizeOK && (
                 <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-[#8B7E74]"
+                  className="absolute inset-0 rounded-full border-2 border-[#4ADE80]"
                   animate={{ scale: [1, 1.2, 1], opacity: [1, 0, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
@@ -210,7 +344,12 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
 
       {/* Capture Text */}
       <p className="text-center text-white/80 mt-4 text-sm font-light tracking-wide">
-        {isCapturing ? '処理中...' : (isDetected ? t('camera.capture') : t('camera.instruction'))}
+        {isCapturing
+          ? '処理中...'
+          : faceStatus?.isSizeOK && isDetected
+            ? t('camera.capture')
+            : ''
+        }
       </p>
     </div>
   );
