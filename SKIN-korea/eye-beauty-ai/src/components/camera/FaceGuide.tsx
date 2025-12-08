@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 import { FacePositionStatus } from '@/lib/facePositionChecker';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FaceGuideProps {
   isActive: boolean;
@@ -12,6 +13,7 @@ interface FaceGuideProps {
 }
 
 export default function FaceGuide({ isActive, faceStatus, isDetected, countdown }: FaceGuideProps) {
+  const { language } = useLanguage();
   // 全ての条件がOKか
   const isAllOK = faceStatus &&
     faceStatus.isPositionOK &&
@@ -80,19 +82,19 @@ export default function FaceGuide({ isActive, faceStatus, isDetected, countdown 
         <div className="flex justify-center gap-2">
           {/* ポジション（一番左） */}
           <StatusBadge
-            label="ポジション"
+            label={language === 'ja' ? 'ポジション' : '위치'}
             isOK={faceStatus?.isPositionOK && faceStatus?.isSizeOK}
           />
 
           {/* 向き */}
           <StatusBadge
-            label="向き"
+            label={language === 'ja' ? '向き' : '방향'}
             isOK={faceStatus?.isFrontFacing ?? false}
           />
 
           {/* 明るさ - 常にOK表示（簡易版） */}
           <StatusBadge
-            label="明るさ"
+            label={language === 'ja' ? '明るさ' : '밝기'}
             isOK={true}
           />
         </div>
@@ -114,14 +116,17 @@ export default function FaceGuide({ isActive, faceStatus, isDetected, countdown 
       )}
 
       {/* Guide Message */}
-      {!countdown && faceStatus?.message && (
+      {!countdown && faceStatus?.messageKey && faceStatus.messageKey !== 'ok' && (
         <div className="absolute bottom-24 left-0 right-0 px-4">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center text-white text-base font-medium"
           >
-            {faceStatus.message}
+            {faceStatus.messageKey === 'closer' && (language === 'ja' ? '顔を近づけてください' : '얼굴을 가까이 해주세요')}
+            {faceStatus.messageKey === 'farther' && (language === 'ja' ? '少し離れてください' : '조금 떨어져 주세요')}
+            {faceStatus.messageKey === 'center' && (language === 'ja' ? '顔を中心に合わせてください' : '얼굴을 중앙에 맞춰주세요')}
+            {faceStatus.messageKey === 'turn' && (language === 'ja' ? '正面を向いてください' : '정면을 바라봐 주세요')}
           </motion.p>
         </div>
       )}
@@ -130,7 +135,7 @@ export default function FaceGuide({ isActive, faceStatus, isDetected, countdown 
       {!countdown && !isDetected && (
         <div className="absolute bottom-24 left-0 right-0 px-4">
           <p className="text-center text-white text-base font-medium">
-            顔を中心に合わせてください
+            {language === 'ja' ? '顔を中心に合わせてください' : '얼굴을 중앙에 맞춰주세요'}
           </p>
         </div>
       )}

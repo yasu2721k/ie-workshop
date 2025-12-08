@@ -1,7 +1,8 @@
 {
   "common": {
     "back": "뒤로",
-    "retry": "다시 진단하기"
+    "retry": "다시 진단하기",
+    "processing": "처리 중..."
   },
   "landing": {
     "title1": "당신의 눈빛,",

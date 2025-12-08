@@ -345,7 +345,7 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
       {/* Capture Text */}
       <p className="text-center text-white/80 mt-4 text-sm font-light tracking-wide">
         {isCapturing
-          ? '処理中...'
+          ? t('common.processing')
           : faceStatus?.isSizeOK && isDetected
             ? t('camera.capture')
             : ''

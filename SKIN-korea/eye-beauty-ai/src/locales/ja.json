@@ -1,7 +1,8 @@
 {
   "common": {
     "back": "戻る",
-    "retry": "もう一度診断する"
+    "retry": "もう一度診断する",
+    "processing": "処理中..."
   },
   "landing": {
     "title1": "あなたの目力、",
