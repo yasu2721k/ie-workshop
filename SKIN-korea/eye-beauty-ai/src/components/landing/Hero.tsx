@@ -83,7 +83,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.6 }}
-          onClick={() => router.push(ROUTES.CAMERA)}
+          onClick={() => router.push(ROUTES.GUIDE)}
           className="mt-10 group flex items-center gap-3 px-10 py-4 bg-[#1A1A1A] text-white text-sm tracking-widest uppercase hover:bg-[#333] transition-colors"
         >
           {t('landing.cta')}

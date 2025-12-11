@@ -38,6 +38,7 @@ export const LINE_FRIEND_URL = 'https://line.me/R/ti/p/@example';
 // Routes
 export const ROUTES = {
   HOME: '/',
+  GUIDE: '/guide',
   CAMERA: '/camera',
   ANALYZING: '/analyzing',
   GATE: '/gate',

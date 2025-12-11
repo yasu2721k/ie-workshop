@@ -30,6 +30,8 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   const [autoShutterCountdown, setAutoShutterCountdown] = useState<number | null>(null);
   const [isWarmupComplete, setIsWarmupComplete] = useState(false);
   const autoShutterTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const conditionMetDelayRef = useRef<NodeJS.Timeout | null>(null);
+  const [isConditionDelayComplete, setIsConditionDelayComplete] = useState(false);
 
   // カメラ開始
   useEffect(() => {
@@ -172,10 +174,30 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   const handleCaptureRef = useRef(handleCapture);
   handleCaptureRef.current = handleCapture;
 
+  // 条件が整ってから2秒待つ処理
+  useEffect(() => {
+    // 条件が満たされた場合、2秒待ってからカウントダウン開始可能にする
+    if (isAllConditionsMet && isWarmupComplete && !isConditionDelayComplete && conditionMetDelayRef.current === null) {
+      conditionMetDelayRef.current = setTimeout(() => {
+        setIsConditionDelayComplete(true);
+        conditionMetDelayRef.current = null;
+      }, 2000);
+    }
+
+    // 条件が満たされなくなった場合、遅延タイマーをリセット
+    if (!isAllConditionsMet) {
+      if (conditionMetDelayRef.current) {
+        clearTimeout(conditionMetDelayRef.current);
+        conditionMetDelayRef.current = null;
+      }
+      setIsConditionDelayComplete(false);
+    }
+  }, [isAllConditionsMet, isWarmupComplete, isConditionDelayComplete]);
+
   // 自動シャッター開始・停止の制御
   useEffect(() => {
-    // 条件が満たされた場合、カウントダウン開始
-    if (isAllConditionsMet && isWarmupComplete && autoShutterTimerRef.current === null) {
+    // 条件が満たされ、2秒の遅延が完了した場合、カウントダウン開始
+    if (isAllConditionsMet && isWarmupComplete && isConditionDelayComplete && autoShutterTimerRef.current === null) {
       // カウントダウン開始
       countdownRef.current = 3;
       setAutoShutterCountdown(3);
@@ -204,7 +226,7 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
       countdownRef.current = 0;
       setAutoShutterCountdown(null);
     }
-  }, [isAllConditionsMet, isWarmupComplete]);
+  }, [isAllConditionsMet, isWarmupComplete, isConditionDelayComplete]);
 
   // クリーンアップ
   useEffect(() => {
@@ -212,6 +234,10 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
       if (autoShutterTimerRef.current) {
         clearInterval(autoShutterTimerRef.current);
         autoShutterTimerRef.current = null;
+      }
+      if (conditionMetDelayRef.current) {
+        clearTimeout(conditionMetDelayRef.current);
+        conditionMetDelayRef.current = null;
       }
     };
   }, []);
