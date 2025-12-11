@@ -79,7 +79,7 @@ export default function ResultPage() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-md mx-auto px-4 pt-3 pb-6 space-y-5">
         {/* Photo & Eye Age Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
