@@ -31,7 +31,7 @@ export default function Hero() {
             src="/images/model.png"
             alt="Eye beauty"
             fill
-            className="object-cover object-top scale-110"
+            className="object-cover object-[center_25%] scale-90"
             priority
           />
 

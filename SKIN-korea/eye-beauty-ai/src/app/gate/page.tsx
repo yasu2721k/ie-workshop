@@ -138,7 +138,7 @@ export default function GatePage() {
             onClick={handleLineClick}
             className="w-full mt-4 py-2 text-[#9B9B9B] text-sm hover:text-[#6B6B6B] transition-colors"
           >
-            スキップして結果を見る（デモ用）
+            {t('gate.skipDemo')}
           </motion.button>
         </motion.div>
       </div>

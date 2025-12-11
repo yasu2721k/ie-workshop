@@ -78,14 +78,14 @@ export default function CameraPage() {
       <Modal
         isOpen={!!errorMessage}
         onClose={() => setErrorMessage(null)}
-        title="カメラエラー"
+        title={t('camera.errorTitle')}
       >
         <p className="text-[#6B6B6B] mb-4">{errorMessage}</p>
         <button
           onClick={() => setErrorMessage(null)}
           className="w-full py-3 bg-[#2C2C2C] text-white rounded-xl font-medium hover:bg-[#3D3D3D] transition-colors"
         >
-          閉じる
+          {t('common.close')}
         </button>
       </Modal>
     </main>

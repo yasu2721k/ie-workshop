@@ -21,7 +21,7 @@ const STEPS = [
 
 export default function AnalyzingPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     capturedImage,
     imageDimensions,
@@ -101,6 +101,7 @@ export default function AnalyzingPage() {
             image: capturedImage,
             imageWidth: imageDimensions?.width || 640,
             imageHeight: imageDimensions?.height || 480,
+            language: language,
           }),
         });
 
@@ -109,9 +110,9 @@ export default function AnalyzingPage() {
           if (errorData.error === 'NO_FACE_DETECTED') {
             setErrorMessage(t('camera.error.noFace'));
           } else if (errorData.error === 'API key not configured') {
-            setErrorMessage('APIキーが設定されていません');
+            setErrorMessage(t('analyzing.apiKeyError'));
           } else {
-            setErrorMessage(errorData.details || errorData.error || '分析中にエラーが発生しました');
+            setErrorMessage(errorData.details || errorData.error || t('analyzing.analysisError'));
           }
           setShowError(true);
           return;
@@ -127,13 +128,13 @@ export default function AnalyzingPage() {
         setAnalysisComplete(true);
       } catch (error) {
         console.error('Analysis failed:', error);
-        setErrorMessage(error instanceof Error ? error.message : '分析中にエラーが発生しました');
+        setErrorMessage(error instanceof Error ? error.message : t('analyzing.analysisError'));
         setShowError(true);
       }
     };
 
     analyze();
-  }, [capturedImage, forceType, imageDimensions, setDiagnosisResult, setAnalysisData, router, t, retryCount]);
+  }, [capturedImage, forceType, imageDimensions, setDiagnosisResult, setAnalysisData, router, t, retryCount, language]);
 
   // 完了後の遷移
   useEffect(() => {
@@ -238,7 +239,7 @@ export default function AnalyzingPage() {
       <Modal
         isOpen={showError}
         onClose={handleRetry}
-        title="分析エラー"
+        title={t('analyzing.errorTitle')}
       >
         <div className="text-center">
           <p className="text-[#6B6B6B] mb-6">
@@ -255,13 +256,13 @@ export default function AnalyzingPage() {
                 }}
                 className="w-full py-3 bg-[#2C2C2C] text-white rounded-xl font-medium hover:bg-[#3D3D3D] transition-colors"
               >
-                再試行 ({retryCount + 1}/3)
+                {t('analyzing.retryButton')} ({retryCount + 1}/3)
               </button>
               <button
                 onClick={handleRetry}
                 className="w-full py-3 bg-[#E8E4DC] text-[#2C2C2C] rounded-xl font-medium hover:bg-[#D4CFC4] transition-colors"
               >
-                撮り直す
+                {t('common.retake')}
               </button>
             </div>
           ) : (
@@ -269,7 +270,7 @@ export default function AnalyzingPage() {
               onClick={handleRetry}
               className="w-full py-3 bg-[#2C2C2C] text-white rounded-xl font-medium hover:bg-[#3D3D3D] transition-colors"
             >
-              撮り直す
+              {t('common.retake')}
             </button>
           )}
         </div>

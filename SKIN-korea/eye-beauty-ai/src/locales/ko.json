@@ -2,7 +2,9 @@
   "common": {
     "back": "뒤로",
     "retry": "다시 진단하기",
-    "processing": "처리 중..."
+    "processing": "처리 중...",
+    "close": "닫기",
+    "retake": "다시 촬영"
   },
   "landing": {
     "title1": "당신의 눈빛,",
@@ -13,6 +15,7 @@
   "camera": {
     "instruction": "얼굴을 프레임에 맞춰 촬영해주세요",
     "capture": "촬영하기",
+    "errorTitle": "카메라 오류",
     "error": {
       "denied": "카메라 접근이 거부되었습니다. 설정에서 카메라 사용을 허용해주세요.",
       "unsupported": "사용 중인 브라우저는 카메라를 지원하지 않습니다.",
@@ -20,10 +23,15 @@
     }
   },
   "analyzing": {
+    "title": "분석 중",
     "step1": "얼굴을 인식하고 있습니다...",
     "step2": "눈가 밝기를 측정 중...",
     "step3": "주름 레벨을 분석 중...",
     "complete": "분석 완료!",
+    "errorTitle": "분석 오류",
+    "apiKeyError": "API 키가 설정되지 않았습니다",
+    "analysisError": "분석 중 오류가 발생했습니다",
+    "retryButton": "재시도",
     "step": {
       "init": "얼굴 인식 중...",
       "darkCircles": "다크서클 분석 중...",
@@ -36,7 +44,8 @@
   "gate": {
     "title": "분석 완료!",
     "description": "상세한 결과와 맞춤 케어 상품을 보려면 공식 LINE을 친구 추가해주세요",
-    "cta": "LINE으로 결과 보기"
+    "cta": "LINE으로 결과 보기",
+    "skipDemo": "건너뛰고 결과 보기 (데모용)"
   },
   "result": {
     "title": "진단 결과",
