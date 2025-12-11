@@ -71,7 +71,7 @@ export default function GatePage() {
       </div>
 
       {/* Gate Popup */}
-      <div className="absolute inset-0 flex items-center justify-center p-6">
+      <div className="absolute inset-0 flex items-start justify-center pt-16 px-6">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
