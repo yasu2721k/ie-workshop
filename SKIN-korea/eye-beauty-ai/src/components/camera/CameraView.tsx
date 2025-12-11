@@ -175,9 +175,17 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   handleCaptureRef.current = handleCapture;
 
   // 条件が整ってから2秒待つ処理
+  // isAllConditionsMetの前回値を追跡
+  const prevConditionsMetRef = useRef(false);
+
   useEffect(() => {
-    // 条件が満たされた場合、2秒待ってからカウントダウン開始可能にする
-    if (isAllConditionsMet && isWarmupComplete && !isConditionDelayComplete && conditionMetDelayRef.current === null) {
+    // 条件が新たに満たされた瞬間を検出（false → true への変化）
+    const justBecameMet = isAllConditionsMet && !prevConditionsMetRef.current;
+    prevConditionsMetRef.current = isAllConditionsMet;
+
+    // 条件が新たに満たされた場合、2秒待ってからカウントダウン開始可能にする
+    if (justBecameMet && isWarmupComplete && conditionMetDelayRef.current === null) {
+      setIsConditionDelayComplete(false); // リセット
       conditionMetDelayRef.current = setTimeout(() => {
         setIsConditionDelayComplete(true);
         conditionMetDelayRef.current = null;
@@ -192,7 +200,7 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
       }
       setIsConditionDelayComplete(false);
     }
-  }, [isAllConditionsMet, isWarmupComplete, isConditionDelayComplete]);
+  }, [isAllConditionsMet, isWarmupComplete]);
 
   // 自動シャッター開始・停止の制御
   useEffect(() => {
