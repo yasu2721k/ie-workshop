@@ -30,8 +30,6 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   const [autoShutterCountdown, setAutoShutterCountdown] = useState<number | null>(null);
   const [isWarmupComplete, setIsWarmupComplete] = useState(false);
   const autoShutterTimerRef = useRef<NodeJS.Timeout | null>(null);
-  // 条件が継続して満たされている時間を追跡
-  const conditionMetStartTimeRef = useRef<number | null>(null);
 
   // カメラ開始
   useEffect(() => {
@@ -175,100 +173,43 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   handleCaptureRef.current = handleCapture;
 
   // 自動シャッター開始・停止の制御
-  // 条件が2秒継続したらカウントダウン開始
+  // 5カウントで開始し、3以下のみ表示（実質2秒待機後に3-2-1表示）
   useEffect(() => {
-    // ウォームアップ未完了またはカウントダウン中は何もしない
-    if (!isWarmupComplete || autoShutterTimerRef.current !== null) {
-      return;
-    }
+    // 条件が満たされた場合、カウントダウン開始
+    if (isAllConditionsMet && isWarmupComplete && autoShutterTimerRef.current === null) {
+      // 5からカウントダウン開始（5,4は非表示、3,2,1を表示）
+      countdownRef.current = 5;
+      setAutoShutterCountdown(null); // 最初は非表示
 
-    if (isAllConditionsMet) {
-      // 条件が満たされた - 開始時刻を記録（まだ記録されていなければ）
-      if (conditionMetStartTimeRef.current === null) {
-        conditionMetStartTimeRef.current = Date.now();
-      }
+      autoShutterTimerRef.current = setInterval(() => {
+        countdownRef.current -= 1;
 
-      // 2秒経過したかチェック
-      const elapsed = Date.now() - conditionMetStartTimeRef.current;
-      if (elapsed >= 2000) {
-        // 2秒経過 - カウントダウン開始
-        countdownRef.current = 3;
-        setAutoShutterCountdown(3);
-
-        autoShutterTimerRef.current = setInterval(() => {
-          countdownRef.current -= 1;
-
-          if (countdownRef.current > 0) {
-            setAutoShutterCountdown(countdownRef.current);
-          } else {
-            // カウント0で撮影
-            if (autoShutterTimerRef.current) {
-              clearInterval(autoShutterTimerRef.current);
-              autoShutterTimerRef.current = null;
-            }
-            setAutoShutterCountdown(null);
-            conditionMetStartTimeRef.current = null;
-            handleCaptureRef.current();
+        if (countdownRef.current > 3) {
+          // 4以上は非表示のまま
+          setAutoShutterCountdown(null);
+        } else if (countdownRef.current > 0) {
+          // 3, 2, 1 を表示
+          setAutoShutterCountdown(countdownRef.current);
+        } else {
+          // カウント0で撮影
+          if (autoShutterTimerRef.current) {
+            clearInterval(autoShutterTimerRef.current);
+            autoShutterTimerRef.current = null;
           }
-        }, 1000);
-      }
-    } else {
-      // 条件が満たされていない - 開始時刻をリセット
-      conditionMetStartTimeRef.current = null;
-    }
-  }, [isAllConditionsMet, isWarmupComplete]);
-
-  // 条件チェックを定期的に行うためのポーリング
-  useEffect(() => {
-    if (!isWarmupComplete || autoShutterTimerRef.current !== null) {
-      return;
-    }
-
-    // 条件が満たされている間、100msごとにチェック
-    if (isAllConditionsMet && conditionMetStartTimeRef.current !== null) {
-      const checkInterval = setInterval(() => {
-        const elapsed = Date.now() - (conditionMetStartTimeRef.current || Date.now());
-        if (elapsed >= 2000 && autoShutterTimerRef.current === null) {
-          // 2秒経過 - カウントダウン開始
-          countdownRef.current = 3;
-          setAutoShutterCountdown(3);
-
-          autoShutterTimerRef.current = setInterval(() => {
-            countdownRef.current -= 1;
-
-            if (countdownRef.current > 0) {
-              setAutoShutterCountdown(countdownRef.current);
-            } else {
-              if (autoShutterTimerRef.current) {
-                clearInterval(autoShutterTimerRef.current);
-                autoShutterTimerRef.current = null;
-              }
-              setAutoShutterCountdown(null);
-              conditionMetStartTimeRef.current = null;
-              handleCaptureRef.current();
-            }
-          }, 1000);
-
-          clearInterval(checkInterval);
+          setAutoShutterCountdown(null);
+          handleCaptureRef.current();
         }
-      }, 100);
+      }, 1000);
+    }
 
-      return () => clearInterval(checkInterval);
+    // 条件が満たされなくなった場合のみリセット（カウントダウン中に条件が外れた場合）
+    if (!isAllConditionsMet && autoShutterTimerRef.current !== null) {
+      clearInterval(autoShutterTimerRef.current);
+      autoShutterTimerRef.current = null;
+      countdownRef.current = 0;
+      setAutoShutterCountdown(null);
     }
   }, [isAllConditionsMet, isWarmupComplete]);
-
-  // 条件が外れた場合のリセット
-  useEffect(() => {
-    if (!isAllConditionsMet) {
-      conditionMetStartTimeRef.current = null;
-      if (autoShutterTimerRef.current !== null) {
-        clearInterval(autoShutterTimerRef.current);
-        autoShutterTimerRef.current = null;
-        countdownRef.current = 0;
-        setAutoShutterCountdown(null);
-      }
-    }
-  }, [isAllConditionsMet]);
 
   // クリーンアップ
   useEffect(() => {
@@ -277,7 +218,6 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
         clearInterval(autoShutterTimerRef.current);
         autoShutterTimerRef.current = null;
       }
-      conditionMetStartTimeRef.current = null;
     };
   }, []);
 
