@@ -30,8 +30,8 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   const [autoShutterCountdown, setAutoShutterCountdown] = useState<number | null>(null);
   const [isWarmupComplete, setIsWarmupComplete] = useState(false);
   const autoShutterTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const conditionMetDelayRef = useRef<NodeJS.Timeout | null>(null);
-  const [isConditionDelayComplete, setIsConditionDelayComplete] = useState(false);
+  // 条件が継続して満たされている時間を追跡
+  const conditionMetStartTimeRef = useRef<number | null>(null);
 
   // カメラ開始
   useEffect(() => {
@@ -174,67 +174,101 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   const handleCaptureRef = useRef(handleCapture);
   handleCaptureRef.current = handleCapture;
 
-  // 条件が整ってから2秒待つ処理
-  // isAllConditionsMetの前回値を追跡
-  const prevConditionsMetRef = useRef(false);
-
+  // 自動シャッター開始・停止の制御
+  // 条件が2秒継続したらカウントダウン開始
   useEffect(() => {
-    // 条件が新たに満たされた瞬間を検出（false → true への変化）
-    const justBecameMet = isAllConditionsMet && !prevConditionsMetRef.current;
-    prevConditionsMetRef.current = isAllConditionsMet;
-
-    // 条件が新たに満たされた場合、2秒待ってからカウントダウン開始可能にする
-    if (justBecameMet && isWarmupComplete && conditionMetDelayRef.current === null) {
-      setIsConditionDelayComplete(false); // リセット
-      conditionMetDelayRef.current = setTimeout(() => {
-        setIsConditionDelayComplete(true);
-        conditionMetDelayRef.current = null;
-      }, 2000);
+    // ウォームアップ未完了またはカウントダウン中は何もしない
+    if (!isWarmupComplete || autoShutterTimerRef.current !== null) {
+      return;
     }
 
-    // 条件が満たされなくなった場合、遅延タイマーをリセット
-    if (!isAllConditionsMet) {
-      if (conditionMetDelayRef.current) {
-        clearTimeout(conditionMetDelayRef.current);
-        conditionMetDelayRef.current = null;
+    if (isAllConditionsMet) {
+      // 条件が満たされた - 開始時刻を記録（まだ記録されていなければ）
+      if (conditionMetStartTimeRef.current === null) {
+        conditionMetStartTimeRef.current = Date.now();
       }
-      setIsConditionDelayComplete(false);
+
+      // 2秒経過したかチェック
+      const elapsed = Date.now() - conditionMetStartTimeRef.current;
+      if (elapsed >= 2000) {
+        // 2秒経過 - カウントダウン開始
+        countdownRef.current = 3;
+        setAutoShutterCountdown(3);
+
+        autoShutterTimerRef.current = setInterval(() => {
+          countdownRef.current -= 1;
+
+          if (countdownRef.current > 0) {
+            setAutoShutterCountdown(countdownRef.current);
+          } else {
+            // カウント0で撮影
+            if (autoShutterTimerRef.current) {
+              clearInterval(autoShutterTimerRef.current);
+              autoShutterTimerRef.current = null;
+            }
+            setAutoShutterCountdown(null);
+            conditionMetStartTimeRef.current = null;
+            handleCaptureRef.current();
+          }
+        }, 1000);
+      }
+    } else {
+      // 条件が満たされていない - 開始時刻をリセット
+      conditionMetStartTimeRef.current = null;
     }
   }, [isAllConditionsMet, isWarmupComplete]);
 
-  // 自動シャッター開始・停止の制御
+  // 条件チェックを定期的に行うためのポーリング
   useEffect(() => {
-    // 条件が満たされ、2秒の遅延が完了した場合、カウントダウン開始
-    if (isAllConditionsMet && isWarmupComplete && isConditionDelayComplete && autoShutterTimerRef.current === null) {
-      // カウントダウン開始
-      countdownRef.current = 3;
-      setAutoShutterCountdown(3);
+    if (!isWarmupComplete || autoShutterTimerRef.current !== null) {
+      return;
+    }
 
-      autoShutterTimerRef.current = setInterval(() => {
-        countdownRef.current -= 1;
+    // 条件が満たされている間、100msごとにチェック
+    if (isAllConditionsMet && conditionMetStartTimeRef.current !== null) {
+      const checkInterval = setInterval(() => {
+        const elapsed = Date.now() - (conditionMetStartTimeRef.current || Date.now());
+        if (elapsed >= 2000 && autoShutterTimerRef.current === null) {
+          // 2秒経過 - カウントダウン開始
+          countdownRef.current = 3;
+          setAutoShutterCountdown(3);
 
-        if (countdownRef.current > 0) {
-          setAutoShutterCountdown(countdownRef.current);
-        } else {
-          // カウント0で撮影
-          if (autoShutterTimerRef.current) {
-            clearInterval(autoShutterTimerRef.current);
-            autoShutterTimerRef.current = null;
-          }
-          setAutoShutterCountdown(null);
-          handleCaptureRef.current();
+          autoShutterTimerRef.current = setInterval(() => {
+            countdownRef.current -= 1;
+
+            if (countdownRef.current > 0) {
+              setAutoShutterCountdown(countdownRef.current);
+            } else {
+              if (autoShutterTimerRef.current) {
+                clearInterval(autoShutterTimerRef.current);
+                autoShutterTimerRef.current = null;
+              }
+              setAutoShutterCountdown(null);
+              conditionMetStartTimeRef.current = null;
+              handleCaptureRef.current();
+            }
+          }, 1000);
+
+          clearInterval(checkInterval);
         }
-      }, 1000);
-    }
+      }, 100);
 
-    // 条件が満たされなくなった場合のみリセット（カウントダウン中に条件が外れた場合）
-    if (!isAllConditionsMet && autoShutterTimerRef.current !== null) {
-      clearInterval(autoShutterTimerRef.current);
-      autoShutterTimerRef.current = null;
-      countdownRef.current = 0;
-      setAutoShutterCountdown(null);
+      return () => clearInterval(checkInterval);
     }
-  }, [isAllConditionsMet, isWarmupComplete, isConditionDelayComplete]);
+  }, [isAllConditionsMet, isWarmupComplete]);
+
+  // 条件が外れた場合のリセット
+  useEffect(() => {
+    if (!isAllConditionsMet) {
+      conditionMetStartTimeRef.current = null;
+      if (autoShutterTimerRef.current !== null) {
+        clearInterval(autoShutterTimerRef.current);
+        autoShutterTimerRef.current = null;
+        countdownRef.current = 0;
+        setAutoShutterCountdown(null);
+      }
+    }
+  }, [isAllConditionsMet]);
 
   // クリーンアップ
   useEffect(() => {
@@ -243,10 +277,7 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
         clearInterval(autoShutterTimerRef.current);
         autoShutterTimerRef.current = null;
       }
-      if (conditionMetDelayRef.current) {
-        clearTimeout(conditionMetDelayRef.current);
-        conditionMetDelayRef.current = null;
-      }
+      conditionMetStartTimeRef.current = null;
     };
   }, []);
 
