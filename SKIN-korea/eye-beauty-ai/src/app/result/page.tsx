@@ -8,7 +8,18 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosis } from '@/contexts/DiagnosisContext';
 import ProductRecommend from '@/components/result/ProductRecommend';
 import SkinToneCard from '@/components/result/SkinToneCard';
+import dynamic from 'next/dynamic';
 import { ROUTES } from '@/lib/constants';
+
+// Three.jsはSSRで動かないのでdynamic importを使用
+const FaceMap3D = dynamic(() => import('@/components/result/FaceMap3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="bg-white rounded-2xl shadow-sm p-5">
+      <div className="h-48 bg-[#F5F5F5] rounded-xl animate-pulse" />
+    </div>
+  ),
+});
 import { DiagnosisScores } from '@/types/diagnosis';
 
 type ScoreKey = keyof DiagnosisScores;
@@ -195,6 +206,9 @@ export default function ResultPage() {
             language={language as 'ja' | 'ko'}
           />
         )}
+
+        {/* 3D Face Map */}
+        <FaceMap3D scores={scores} language={language as 'ja' | 'ko'} />
 
         {/* Detailed Analysis - Always Open */}
         {(observation || detailedAnalysis || analysis) && (
