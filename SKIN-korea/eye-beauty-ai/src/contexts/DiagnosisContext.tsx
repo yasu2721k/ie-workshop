@@ -8,11 +8,13 @@ import {
   DiagnosisResult,
   AnalysisData,
   ImageDimensions,
+  EyePositions,
 } from '@/types/diagnosis';
 
 const initialState: DiagnosisState = {
   capturedImage: null,
   imageDimensions: null,
+  capturedEyePositions: null,
   diagnosisResult: null,
   diagnosisType: null,
   score: 0,
@@ -27,11 +29,12 @@ const DiagnosisContext = createContext<DiagnosisContextType | undefined>(undefin
 export function DiagnosisProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DiagnosisState>(initialState);
 
-  const setCapturedImage = useCallback((image: string, dimensions?: ImageDimensions) => {
+  const setCapturedImage = useCallback((image: string, dimensions?: ImageDimensions, eyePositions?: EyePositions) => {
     setState((prev) => ({
       ...prev,
       capturedImage: image,
       imageDimensions: dimensions || null,
+      capturedEyePositions: eyePositions || null,
     }));
   }, []);
 

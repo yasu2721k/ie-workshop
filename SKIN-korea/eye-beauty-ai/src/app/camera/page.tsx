@@ -8,6 +8,7 @@ import BackButton from '@/components/ui/BackButton';
 import CameraView from '@/components/camera/CameraView';
 import Modal from '@/components/ui/Modal';
 import { ROUTES } from '@/lib/constants';
+import { EyePositions } from '@/types/diagnosis';
 
 export default function CameraPage() {
   const router = useRouter();
@@ -15,8 +16,12 @@ export default function CameraPage() {
   const { setCapturedImage } = useDiagnosis();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleCapture = useCallback((result: { imageData: string; width: number; height: number }) => {
-    setCapturedImage(result.imageData, { width: result.width, height: result.height });
+  const handleCapture = useCallback((result: { imageData: string; width: number; height: number; eyePositions?: EyePositions }) => {
+    setCapturedImage(
+      result.imageData,
+      { width: result.width, height: result.height },
+      result.eyePositions
+    );
     router.push(ROUTES.ANALYZING);
   }, [setCapturedImage, router]);
 

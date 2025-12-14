@@ -1,11 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { DiagnosisScores } from '@/types/diagnosis';
+import { DiagnosisScores, EyePositions } from '@/types/diagnosis';
 
 interface FaceAnalysisOverlayProps {
   capturedImage: string;
   scores: DiagnosisScores;
+  eyePositions?: EyePositions | null;
   language: 'ja' | 'ko';
 }
 
@@ -21,6 +22,7 @@ interface ProblemArea {
 export default function FaceAnalysisOverlay({
   capturedImage,
   scores,
+  eyePositions,
   language,
 }: FaceAnalysisOverlayProps) {
   // スコアに基づいて色を決定
@@ -38,7 +40,75 @@ export default function FaceAnalysisOverlay({
     return '#4FC3F7';
   };
 
-  // 問題箇所の定義（目元周辺）
+  // 目の下エリアを計算（MediaPipe座標から）
+  const getUnderEyeArea = (isLeft: boolean): { top: string; left: string; width: string; height: string } => {
+    if (!eyePositions) {
+      // フォールバック：固定位置
+      return isLeft
+        ? { top: '52%', left: '20%', width: '25%', height: '12%' }
+        : { top: '52%', left: '55%', width: '25%', height: '12%' };
+    }
+
+    const eye = isLeft ? eyePositions.leftEye : eyePositions.rightEye;
+    const underEyePoints = isLeft ? eyePositions.leftUnderEye : eyePositions.rightUnderEye;
+
+    if (underEyePoints && underEyePoints.length > 0) {
+      // 目の下ポイントの範囲を計算
+      const xValues = underEyePoints.map(p => p.x);
+      const yValues = underEyePoints.map(p => p.y);
+      const minX = Math.min(...xValues);
+      const maxX = Math.max(...xValues);
+      const minY = Math.min(...yValues);
+      const maxY = Math.max(...yValues);
+
+      // 範囲を少し広げる
+      const padding = 0.02;
+      return {
+        top: `${(minY - padding) * 100}%`,
+        left: `${(minX - padding) * 100}%`,
+        width: `${(maxX - minX + padding * 2) * 100}%`,
+        height: `${(maxY - minY + padding * 2) * 100}%`,
+      };
+    }
+
+    // 目の位置から推測
+    const offsetY = 0.08; // 目から下にオフセット
+    const width = 0.15;
+    const height = 0.08;
+
+    return {
+      top: `${(eye.y + offsetY) * 100}%`,
+      left: `${(eye.x - width / 2) * 100}%`,
+      width: `${width * 100}%`,
+      height: `${height * 100}%`,
+    };
+  };
+
+  // 目尻のシワエリアを計算
+  const getEyeCornerArea = (isLeft: boolean): { top: string; left: string; width: string; height: string } => {
+    if (!eyePositions) {
+      // フォールバック：固定位置
+      return isLeft
+        ? { top: '45%', left: '8%', width: '12%', height: '15%' }
+        : { top: '45%', left: '80%', width: '12%', height: '15%' };
+    }
+
+    const eye = isLeft ? eyePositions.leftEye : eyePositions.rightEye;
+
+    // 目尻の位置を計算（左目は左側、右目は右側）
+    const offsetX = isLeft ? -0.12 : 0.08;
+    const width = 0.08;
+    const height = 0.10;
+
+    return {
+      top: `${(eye.y - height / 2) * 100}%`,
+      left: `${(eye.x + offsetX) * 100}%`,
+      width: `${width * 100}%`,
+      height: `${height * 100}%`,
+    };
+  };
+
+  // 問題箇所の定義（実際の座標を使用）
   const problemAreas: ProblemArea[] = [
     {
       key: 'darkCircles',
@@ -46,7 +116,7 @@ export default function FaceAnalysisOverlay({
       labelKo: '다크서클',
       score: scores.darkCircles,
       color: getColorForScore(scores.darkCircles),
-      position: { top: '52%', left: '20%', width: '25%', height: '12%' },
+      position: getUnderEyeArea(true), // 左目の下
     },
     {
       key: 'darkCircles',
@@ -54,7 +124,7 @@ export default function FaceAnalysisOverlay({
       labelKo: '다크서클',
       score: scores.darkCircles,
       color: getColorForScore(scores.darkCircles),
-      position: { top: '52%', left: '55%', width: '25%', height: '12%' },
+      position: getUnderEyeArea(false), // 右目の下
     },
     {
       key: 'wrinkles',
@@ -62,7 +132,7 @@ export default function FaceAnalysisOverlay({
       labelKo: '주름',
       score: scores.wrinkles,
       color: getColorForScore(scores.wrinkles),
-      position: { top: '45%', left: '8%', width: '12%', height: '15%' },
+      position: getEyeCornerArea(true), // 左目尻
     },
     {
       key: 'wrinkles',
@@ -70,7 +140,7 @@ export default function FaceAnalysisOverlay({
       labelKo: '주름',
       score: scores.wrinkles,
       color: getColorForScore(scores.wrinkles),
-      position: { top: '45%', left: '80%', width: '12%', height: '15%' },
+      position: getEyeCornerArea(false), // 右目尻
     },
   ];
 
@@ -119,6 +189,13 @@ export default function FaceAnalysisOverlay({
           alt="分析画像"
           className="w-full h-full object-cover"
         />
+
+        {/* 検出状態の表示 */}
+        {eyePositions && (
+          <div className="absolute top-2 right-2 bg-green-500/80 text-white text-xs px-2 py-1 rounded-full">
+            {language === 'ja' ? '顔検出済み' : '얼굴 감지됨'}
+          </div>
+        )}
 
         {/* 問題箇所のハイライト */}
         {problemAreas.map((area, index) => (

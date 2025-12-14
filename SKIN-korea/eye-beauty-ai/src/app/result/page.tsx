@@ -30,7 +30,7 @@ const SCORE_CONFIG: {
 export default function ResultPage() {
   const router = useRouter();
   const { language, t } = useLanguage();
-  const { capturedImage, diagnosisResult, reset } = useDiagnosis();
+  const { capturedImage, diagnosisResult, capturedEyePositions, reset } = useDiagnosis();
 
   useEffect(() => {
     if (!diagnosisResult) {
@@ -202,6 +202,7 @@ export default function ResultPage() {
           <FaceAnalysisOverlay
             capturedImage={capturedImage}
             scores={scores}
+            eyePositions={capturedEyePositions}
             language={language as 'ja' | 'ko'}
           />
         )}

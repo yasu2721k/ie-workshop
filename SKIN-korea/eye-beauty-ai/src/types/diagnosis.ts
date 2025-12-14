@@ -84,6 +84,7 @@ export interface DiagnosisState {
   // 撮影画像
   capturedImage: string | null;
   imageDimensions: ImageDimensions | null;
+  capturedEyePositions: EyePositions | null;
 
   // 解析結果（新）
   diagnosisResult: DiagnosisResult | null;
@@ -104,7 +105,7 @@ export interface DiagnosisState {
 }
 
 export interface DiagnosisContextType extends DiagnosisState {
-  setCapturedImage: (image: string, dimensions?: ImageDimensions) => void;
+  setCapturedImage: (image: string, dimensions?: ImageDimensions, eyePositions?: EyePositions) => void;
   setDiagnosisResult: (result: DiagnosisResult) => void;
   setAnalysisData: (data: AnalysisData) => void;
   setForceType: (type: DiagnosisType) => void;
