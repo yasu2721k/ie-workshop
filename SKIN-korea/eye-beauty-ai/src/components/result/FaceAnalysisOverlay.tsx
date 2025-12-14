@@ -25,6 +25,9 @@ export default function FaceAnalysisOverlay({
   eyePositions,
   language,
 }: FaceAnalysisOverlayProps) {
+  // デバッグ：座標を確認
+  console.log('FaceAnalysisOverlay - eyePositions:', eyePositions);
+
   // スコアに基づいて色を決定
   const getColorForScore = (score: number): string => {
     if (score <= 2) return 'rgba(229, 115, 115, 0.6)'; // 赤
@@ -40,6 +43,9 @@ export default function FaceAnalysisOverlay({
     return '#4FC3F7';
   };
 
+  // X座標を反転（画像はミラー保存されているが、MediaPipe座標は元のビデオ基準）
+  const mirrorX = (x: number): number => 1 - x;
+
   // 目の下エリアを計算（MediaPipe座標から）
   const getUnderEyeArea = (isLeft: boolean): { top: string; left: string; width: string; height: string } => {
     if (!eyePositions) {
@@ -49,12 +55,13 @@ export default function FaceAnalysisOverlay({
         : { top: '52%', left: '55%', width: '25%', height: '12%' };
     }
 
+    // MediaPipeの左目は画像の右側に、右目は画像の左側に表示される（ミラー後）
     const eye = isLeft ? eyePositions.leftEye : eyePositions.rightEye;
     const underEyePoints = isLeft ? eyePositions.leftUnderEye : eyePositions.rightUnderEye;
 
     if (underEyePoints && underEyePoints.length > 0) {
-      // 目の下ポイントの範囲を計算
-      const xValues = underEyePoints.map(p => p.x);
+      // 目の下ポイントの範囲を計算（X座標を反転）
+      const xValues = underEyePoints.map(p => mirrorX(p.x));
       const yValues = underEyePoints.map(p => p.y);
       const minX = Math.min(...xValues);
       const maxX = Math.max(...xValues);
@@ -71,14 +78,15 @@ export default function FaceAnalysisOverlay({
       };
     }
 
-    // 目の位置から推測
+    // 目の位置から推測（X座標を反転）
+    const mirroredEyeX = mirrorX(eye.x);
     const offsetY = 0.08; // 目から下にオフセット
     const width = 0.15;
     const height = 0.08;
 
     return {
       top: `${(eye.y + offsetY) * 100}%`,
-      left: `${(eye.x - width / 2) * 100}%`,
+      left: `${(mirroredEyeX - width / 2) * 100}%`,
       width: `${width * 100}%`,
       height: `${height * 100}%`,
     };
@@ -94,15 +102,17 @@ export default function FaceAnalysisOverlay({
     }
 
     const eye = isLeft ? eyePositions.leftEye : eyePositions.rightEye;
+    const mirroredEyeX = mirrorX(eye.x);
 
-    // 目尻の位置を計算（左目は左側、右目は右側）
-    const offsetX = isLeft ? -0.12 : 0.08;
+    // 目尻の位置を計算（ミラー後：左目は画像右側、右目は画像左側）
+    // ミラー後の左目の目尻は右側、右目の目尻は左側
+    const offsetX = isLeft ? 0.08 : -0.12;
     const width = 0.08;
     const height = 0.10;
 
     return {
       top: `${(eye.y - height / 2) * 100}%`,
-      left: `${(eye.x + offsetX) * 100}%`,
+      left: `${(mirroredEyeX + offsetX) * 100}%`,
       width: `${width * 100}%`,
       height: `${height * 100}%`,
     };
