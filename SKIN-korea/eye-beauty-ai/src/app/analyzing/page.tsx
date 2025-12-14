@@ -9,6 +9,7 @@ import ScanAnimation from '@/components/analyzing/ScanAnimation';
 import Modal from '@/components/ui/Modal';
 import { ROUTES } from '@/lib/constants';
 import { DiagnosisResult, DiagnosisScores } from '@/types/diagnosis';
+import { analyzeSkinTone } from '@/lib/skinToneAnalyzer';
 
 const STEPS = [
   { id: 'init', textKey: 'analyzing.step.init', duration: 2000 },
@@ -121,7 +122,17 @@ export default function AnalyzingPage() {
         const result: DiagnosisResult = await response.json();
         console.log('Gemini analysis result:', result);
 
-        setDiagnosisResult(result);
+        // 肌トーン分析を実行
+        const skinToneAnalysis = await analyzeSkinTone(capturedImage);
+        console.log('Skin tone analysis:', skinToneAnalysis);
+
+        // 肌トーン分析結果を追加
+        const resultWithSkinTone: DiagnosisResult = {
+          ...result,
+          skinToneAnalysis,
+        };
+
+        setDiagnosisResult(resultWithSkinTone);
         setAnalysisData({
           eyePositions: result.eyePositions,
         });

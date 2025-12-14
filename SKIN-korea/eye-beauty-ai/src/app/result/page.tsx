@@ -7,6 +7,7 @@ import { RotateCcw, Eye } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosis } from '@/contexts/DiagnosisContext';
 import ProductRecommend from '@/components/result/ProductRecommend';
+import SkinToneCard from '@/components/result/SkinToneCard';
 import { ROUTES } from '@/lib/constants';
 import { DiagnosisScores } from '@/types/diagnosis';
 
@@ -45,7 +46,7 @@ export default function ResultPage() {
     return null;
   }
 
-  const { scores, eyeAge, overallScore, primaryConcern, recommendation, observation, detailedAnalysis, analysis } = diagnosisResult;
+  const { scores, eyeAge, overallScore, primaryConcern, recommendation, observation, detailedAnalysis, analysis, skinToneAnalysis } = diagnosisResult;
 
   // 総合評価のテキスト
   const getOverallRating = () => {
@@ -186,6 +187,14 @@ export default function ResultPage() {
             ))}
           </div>
         </motion.div>
+
+        {/* Skin Tone Analysis */}
+        {skinToneAnalysis && (
+          <SkinToneCard
+            analysis={skinToneAnalysis}
+            language={language as 'ja' | 'ko'}
+          />
+        )}
 
         {/* Detailed Analysis - Always Open */}
         {(observation || detailedAnalysis || analysis) && (

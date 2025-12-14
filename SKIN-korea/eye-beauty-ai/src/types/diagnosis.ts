@@ -40,6 +40,15 @@ export interface DetailedAnalysis {
   firmness: string;
 }
 
+export interface SkinToneAnalysis {
+  blueness: number;    // 青み成分（青クマ度）0-100
+  brownness: number;   // 茶み成分（茶クマ度）0-100
+  yellowness: number;  // 黄ぐすみ度 0-100
+  redness: number;     // 赤み度 0-100
+  clarity: number;     // 透明感スコア 0-100
+  brightness: number;  // 肌の明るさ 0-100
+}
+
 export interface DiagnosisResult {
   scores: DiagnosisScores;
   eyeAge: EyeAge;
@@ -50,6 +59,7 @@ export interface DiagnosisResult {
   observation?: DarkCircleObservation | null;
   detailedAnalysis?: DetailedAnalysis | null;
   eyePositions?: EyePositions;
+  skinToneAnalysis?: SkinToneAnalysis | null;  // 肌トーン分析
 }
 
 export interface AnalysisData {
