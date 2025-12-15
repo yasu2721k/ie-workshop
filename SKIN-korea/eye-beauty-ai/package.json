@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.948.0",
     "@google/generative-ai": "^0.24.1",
     "@mediapipe/camera_utils": "^0.3.1675466862",
     "@mediapipe/drawing_utils": "^0.3.1675466124",

@@ -2,11 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateEyeAge } from '@/lib/eyeAgeCalculator';
 import { DiagnosisScores } from '@/types/diagnosis';
+import { analyzeWithRekognition, generateBeautyMetrics, RekognitionFaceData } from '@/lib/rekognitionService';
 
 // Gemini 3 Pro Preview 初期化
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
-const ANALYSIS_PROMPT_JA = `あなたは目元の美容状態を分析するAIアドバイザーです。この顔写真から目元の見た目の特徴を詳しく観察してください。
+// プロンプト生成関数（Rekognitionデータを含む）
+function generatePromptJA(rekognitionData?: { faceData: RekognitionFaceData; metrics: ReturnType<typeof generateBeautyMetrics> }) {
+  let objectiveData = '';
+
+  if (rekognitionData) {
+    const { faceData, metrics } = rekognitionData;
+    objectiveData = `
+【客観的分析データ（AWS Rekognition による計測）】
+- 推定年齢: ${faceData.ageRange.low}〜${faceData.ageRange.high}歳（中央値: ${faceData.ageRange.estimated}歳）
+- 肌の明るさ: ${metrics.skinBrightness}/100
+- 疲労感スコア: ${metrics.fatigueScore}/100（高いほど疲れている印象）
+- 目の開き具合: ${metrics.eyeOpenness}%
+- 表情の状態: ${metrics.emotionalState}
+- 画像品質（シャープネス）: ${Math.round(faceData.quality.sharpness)}/100
+
+上記の客観データを参考にしつつ、画像から見える特徴を総合的に判断してください。
+特に「疲労感スコア」が高い場合はクマやくすみの評価を厳しく、「肌の明るさ」が低い場合はくすみの評価を厳しくしてください。
+`;
+  }
+
+  return `あなたは目元の美容状態を分析するAIアドバイザーです。この顔写真から目元の見た目の特徴を詳しく観察してください。
 
 【重要な指示】
 - 写真を拡大して目元周辺を詳細に観察すること
@@ -14,7 +35,7 @@ const ANALYSIS_PROMPT_JA = `あなたは目元の美容状態を分析するAI�
 - 実際に見える特徴のみを根拠に判断すること
 - 「普通」や「問題なし」に偏らず、細かい特徴も検出すること
 - ※これは美容目的の参考情報であり、医療診断ではありません
-
+${objectiveData}
 【評価基準 - 厳格に適用】
 
 ■ darkCircles（クマ）1-5点
@@ -85,8 +106,28 @@ const ANALYSIS_PROMPT_JA = `あなたは目元の美容状態を分析するAI�
   "primaryConcern": "最も改善が必要な項目のキー名",
   "recommendation": "具体的なケアアドバイス"
 }`;
+}
 
-const ANALYSIS_PROMPT_KO = `당신은 눈가의 미용 상태를 분석하는 AI 어드바이저입니다. 이 얼굴 사진에서 눈가의 외관 특징을 자세히 관찰해주세요.
+function generatePromptKO(rekognitionData?: { faceData: RekognitionFaceData; metrics: ReturnType<typeof generateBeautyMetrics> }) {
+  let objectiveData = '';
+
+  if (rekognitionData) {
+    const { faceData, metrics } = rekognitionData;
+    objectiveData = `
+【객관적 분석 데이터 (AWS Rekognition 측정)】
+- 추정 나이: ${faceData.ageRange.low}~${faceData.ageRange.high}세 (중앙값: ${faceData.ageRange.estimated}세)
+- 피부 밝기: ${metrics.skinBrightness}/100
+- 피로감 점수: ${metrics.fatigueScore}/100 (높을수록 피곤한 인상)
+- 눈 뜨임 정도: ${metrics.eyeOpenness}%
+- 표정 상태: ${metrics.emotionalState}
+- 이미지 품질 (선명도): ${Math.round(faceData.quality.sharpness)}/100
+
+위의 객관적 데이터를 참고하면서 이미지에서 보이는 특징을 종합적으로 판단해주세요.
+특히 "피로감 점수"가 높은 경우 다크서클이나 칙칙함 평가를 엄격하게, "피부 밝기"가 낮은 경우 칙칙함 평가를 엄격하게 해주세요.
+`;
+  }
+
+  return `당신은 눈가의 미용 상태를 분석하는 AI 어드바이저입니다. 이 얼굴 사진에서 눈가의 외관 특징을 자세히 관찰해주세요.
 
 【중요한 지시】
 - 사진을 확대하여 눈가 주변을 상세히 관찰할 것
@@ -94,7 +135,7 @@ const ANALYSIS_PROMPT_KO = `당신은 눈가의 미용 상태를 분석하는 AI
 - 실제로 보이는 특징만을 근거로 판단할 것
 - "보통"이나 "문제없음"에 치우치지 말고 세세한 특징도 감지할 것
 - ※이것은 미용 목적의 참고 정보이며 의료 진단이 아닙니다
-
+${objectiveData}
 【평가 기준 - 엄격히 적용】
 
 ■ darkCircles(다크서클) 1-5점
@@ -165,14 +206,12 @@ const ANALYSIS_PROMPT_KO = `당신은 눈가의 미용 상태를 분석하는 AI
   "primaryConcern": "가장 개선이 필요한 항목의 키 이름",
   "recommendation": "구체적인 케어 조언"
 }`;
+}
 
 
 export async function POST(request: NextRequest) {
   try {
     const { image, eyePositions, language = 'ja' } = await request.json();
-
-    // 言語に応じたプロンプトを選択
-    const ANALYSIS_PROMPT = language === 'ko' ? ANALYSIS_PROMPT_KO : ANALYSIS_PROMPT_JA;
 
     if (!image) {
       return NextResponse.json(
@@ -192,13 +231,39 @@ export async function POST(request: NextRequest) {
     // Base64データの整形
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
 
-    // Gemini 3 Pro Preview を使用（最高精度）
+    // ========== STEP 1: AWS Rekognition で客観データ取得 ==========
+    let rekognitionData: { faceData: RekognitionFaceData; metrics: ReturnType<typeof generateBeautyMetrics> } | undefined;
+
+    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+      console.log('Analyzing with AWS Rekognition...');
+      const rekognitionResult = await analyzeWithRekognition(base64Data);
+
+      if (rekognitionResult.success && rekognitionResult.faceData) {
+        const metrics = generateBeautyMetrics(rekognitionResult.faceData);
+        rekognitionData = {
+          faceData: rekognitionResult.faceData,
+          metrics,
+        };
+        console.log('Rekognition data:', JSON.stringify(rekognitionData, null, 2));
+      } else {
+        console.warn('Rekognition analysis failed:', rekognitionResult.error);
+      }
+    } else {
+      console.log('AWS credentials not configured, skipping Rekognition');
+    }
+
+    // ========== STEP 2: プロンプト生成（客観データを含む） ==========
+    const ANALYSIS_PROMPT = language === 'ko'
+      ? generatePromptKO(rekognitionData)
+      : generatePromptJA(rekognitionData);
+
+    // ========== STEP 3: Gemini 3 Pro で分析 ==========
     const modelName = process.env.GEMINI_MODEL || 'gemini-3-pro-preview';
     const model = genAI.getGenerativeModel({
       model: modelName,
       generationConfig: {
-        temperature: 0.3,
-        topP: 0.9,
+        temperature: 0.2,  // より決定論的に
+        topP: 0.85,
         maxOutputTokens: 4096,
       },
     });
@@ -258,8 +323,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 目元年齢を算出
-    const eyeAge = calculateEyeAge(scores);
+    // ========== STEP 4: Rekognitionデータでスコア調整 ==========
+    if (rekognitionData) {
+      const { metrics } = rekognitionData;
+
+      // 疲労感が高い場合、クマとくすみのスコアを厳しく調整
+      if (metrics.fatigueScore > 60) {
+        // 疲労感が高いのにスコアが高すぎる場合は下げる
+        if (scores.darkCircles > 3) {
+          scores.darkCircles = Math.max(2, scores.darkCircles - 1);
+          console.log('Adjusted darkCircles score based on fatigue:', scores.darkCircles);
+        }
+        if (scores.dullness > 3) {
+          scores.dullness = Math.max(2, scores.dullness - 1);
+          console.log('Adjusted dullness score based on fatigue:', scores.dullness);
+        }
+      }
+
+      // 肌の明るさが低い場合、くすみのスコアを厳しく
+      if (metrics.skinBrightness < 40 && scores.dullness > 3) {
+        scores.dullness = Math.max(2, scores.dullness - 1);
+        console.log('Adjusted dullness score based on brightness:', scores.dullness);
+      }
+    }
+
+    // 目元年齢を算出（Rekognitionの年齢データも考慮）
+    const eyeAge = calculateEyeAge(scores, rekognitionData?.faceData.ageRange.estimated);
 
     // 総合スコア算出（各軸の平均 × 20）
     const sum = Object.values(scores).reduce((a, b) => a + b, 0);
@@ -285,6 +374,8 @@ export async function POST(request: NextRequest) {
       observation: analysisResult.observation || null,
       detailedAnalysis: analysisResult.detailedAnalysis || null,
       eyePositions: eyePositions || null,
+      // Rekognitionの補助データも返す（デバッグ/表示用）
+      rekognitionMetrics: rekognitionData?.metrics || null,
     };
 
     return NextResponse.json(diagnosisResult);
