@@ -8,7 +8,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosis } from '@/contexts/DiagnosisContext';
 import ProductRecommend from '@/components/result/ProductRecommend';
 import SkinToneCard from '@/components/result/SkinToneCard';
-import FaceAnalysisOverlay from '@/components/result/FaceAnalysisOverlay';
+import DetailedFaceAnalysis from '@/components/result/DetailedFaceAnalysis';
 import { ROUTES } from '@/lib/constants';
 import { DiagnosisScores } from '@/types/diagnosis';
 
@@ -197,9 +197,9 @@ export default function ResultPage() {
           />
         )}
 
-        {/* Face Analysis Overlay */}
+        {/* Detailed Face Analysis Map */}
         {capturedImage && (
-          <FaceAnalysisOverlay
+          <DetailedFaceAnalysis
             capturedImage={capturedImage}
             scores={scores}
             eyePositions={capturedEyePositions}
