@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateEyeAge } from '@/lib/eyeAgeCalculator';
-import { DiagnosisScores } from '@/types/diagnosis';
+import { DiagnosisScores, ProblemAreas } from '@/types/diagnosis';
 import { analyzeWithRekognition, RekognitionFaceData } from '@/lib/rekognitionService';
 
 // Gemini 3 Pro Preview 初期化
@@ -84,6 +84,16 @@ ${objectiveData}
 - mixed: 複数の色が混在
 - none: クマが見られない
 
+【問題箇所の座標指定 - 非常に重要】
+画像上の問題箇所を正確な座標で指定してください。
+- x: 0.0（左端）〜 1.0（右端）
+- y: 0.0（上端）〜 1.0（下端）
+- 画像の顔の位置を基準に、問題のある具体的な箇所を特定
+- 目の下のクマなら y は大体 0.35〜0.50 の範囲
+- 目尻のシワなら x は目の外側（左目なら0.2-0.35、右目なら0.65-0.8付近）
+- severity: 1（軽度）〜 5（重度）
+- type: 問題の種類（例: "色素沈着", "血管透け", "細いシワ", "深いシワ", "たるみ", "乾燥"）
+
 【出力形式】以下のJSON形式のみ出力:
 {
   "observation": {
@@ -99,6 +109,18 @@ ${objectiveData}
     "firmness": 1-5,
     "dullness": 1-5,
     "moisture": 1-5
+  },
+  "problemAreas": {
+    "darkCircles": [
+      {"x": 0.30, "y": 0.42, "severity": 3, "type": "血管透け"},
+      {"x": 0.70, "y": 0.43, "severity": 3, "type": "血管透け"}
+    ],
+    "wrinkles": [
+      {"x": 0.22, "y": 0.38, "severity": 2, "type": "目尻の小ジワ"}
+    ],
+    "firmness": [],
+    "dullness": [],
+    "moisture": []
   },
   "detailedAnalysis": {
     "darkCircles": "クマの色・範囲・濃さの具体的観察",
@@ -180,6 +202,16 @@ ${objectiveData}
 - mixed: 여러 색이 혼재
 - none: 다크서클 없음
 
+【문제 부위 좌표 지정 - 매우 중요】
+이미지에서 문제 부위를 정확한 좌표로 지정해 주세요.
+- x: 0.0(왼쪽 끝) ~ 1.0(오른쪽 끝)
+- y: 0.0(위쪽 끝) ~ 1.0(아래쪽 끝)
+- 이미지의 얼굴 위치를 기준으로 문제가 있는 구체적인 위치를 특정
+- 눈 아래 다크서클이라면 y는 대략 0.35~0.50 범위
+- 눈꼬리 주름이라면 x는 눈 바깥쪽(왼눈이라면 0.2-0.35, 오른눈이라면 0.65-0.8 부근)
+- severity: 1(경미) ~ 5(심각)
+- type: 문제 유형(예: "색소침착", "혈관 비침", "잔주름", "깊은 주름", "처짐", "건조")
+
 【출력 형식】아래 JSON 형식만 출력:
 {
   "observation": {
@@ -195,6 +227,18 @@ ${objectiveData}
     "firmness": 1-5,
     "dullness": 1-5,
     "moisture": 1-5
+  },
+  "problemAreas": {
+    "darkCircles": [
+      {"x": 0.30, "y": 0.42, "severity": 3, "type": "혈관 비침"},
+      {"x": 0.70, "y": 0.43, "severity": 3, "type": "혈관 비침"}
+    ],
+    "wrinkles": [
+      {"x": 0.22, "y": 0.38, "severity": 2, "type": "눈꼬리 잔주름"}
+    ],
+    "firmness": [],
+    "dullness": [],
+    "moisture": []
   },
   "detailedAnalysis": {
     "darkCircles": "다크서클의 색・범위・진하기 구체적 관찰",
@@ -350,6 +394,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // problemAreasの検証とデフォルト値設定
+    const defaultProblemAreas: ProblemAreas = {
+      darkCircles: [],
+      wrinkles: [],
+      firmness: [],
+      dullness: [],
+      moisture: [],
+    };
+
+    let problemAreas: ProblemAreas = defaultProblemAreas;
+    if (analysisResult.problemAreas) {
+      // AIからの座標データを検証
+      problemAreas = {
+        darkCircles: Array.isArray(analysisResult.problemAreas.darkCircles)
+          ? analysisResult.problemAreas.darkCircles.filter((p: { x: number; y: number }) =>
+              typeof p.x === 'number' && typeof p.y === 'number' &&
+              p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1)
+          : [],
+        wrinkles: Array.isArray(analysisResult.problemAreas.wrinkles)
+          ? analysisResult.problemAreas.wrinkles.filter((p: { x: number; y: number }) =>
+              typeof p.x === 'number' && typeof p.y === 'number' &&
+              p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1)
+          : [],
+        firmness: Array.isArray(analysisResult.problemAreas.firmness)
+          ? analysisResult.problemAreas.firmness.filter((p: { x: number; y: number }) =>
+              typeof p.x === 'number' && typeof p.y === 'number' &&
+              p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1)
+          : [],
+        dullness: Array.isArray(analysisResult.problemAreas.dullness)
+          ? analysisResult.problemAreas.dullness.filter((p: { x: number; y: number }) =>
+              typeof p.x === 'number' && typeof p.y === 'number' &&
+              p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1)
+          : [],
+        moisture: Array.isArray(analysisResult.problemAreas.moisture)
+          ? analysisResult.problemAreas.moisture.filter((p: { x: number; y: number }) =>
+              typeof p.x === 'number' && typeof p.y === 'number' &&
+              p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1)
+          : [],
+      };
+    }
+
+    console.log('Problem areas detected:', JSON.stringify(problemAreas, null, 2));
+
     // レスポンス構築
     const diagnosisResult = {
       scores,
@@ -361,6 +448,7 @@ export async function POST(request: NextRequest) {
       observation: analysisResult.observation || null,
       detailedAnalysis: analysisResult.detailedAnalysis || null,
       eyePositions: eyePositions || null,
+      problemAreas,
     };
 
     return NextResponse.json(diagnosisResult);

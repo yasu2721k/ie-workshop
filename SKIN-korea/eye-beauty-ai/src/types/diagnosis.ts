@@ -40,6 +40,22 @@ export interface DetailedAnalysis {
   firmness: string;
 }
 
+// 問題箇所の座標データ（0-1の正規化座標）
+export interface ProblemPoint {
+  x: number;       // 0-1 (左から右)
+  y: number;       // 0-1 (上から下)
+  severity: number; // 1-5 (深刻度)
+  type: string;     // 問題の種類
+}
+
+export interface ProblemAreas {
+  darkCircles: ProblemPoint[];   // クマの位置
+  wrinkles: ProblemPoint[];      // シワの位置
+  firmness: ProblemPoint[];      // たるみの位置
+  dullness: ProblemPoint[];      // くすみの位置
+  moisture: ProblemPoint[];      // 乾燥の位置
+}
+
 export interface SkinToneAnalysis {
   blueness: number;    // 青み成分（青クマ度）0-100
   brownness: number;   // 茶み成分（茶クマ度）0-100
@@ -60,6 +76,7 @@ export interface DiagnosisResult {
   detailedAnalysis?: DetailedAnalysis | null;
   eyePositions?: EyePositions;
   skinToneAnalysis?: SkinToneAnalysis | null;  // 肌トーン分析
+  problemAreas?: ProblemAreas | null;  // 問題箇所の座標データ
 }
 
 export interface AnalysisData {

@@ -47,7 +47,7 @@ export default function ResultPage() {
     return null;
   }
 
-  const { scores, eyeAge, overallScore, primaryConcern, recommendation, observation, detailedAnalysis, analysis, skinToneAnalysis } = diagnosisResult;
+  const { scores, eyeAge, overallScore, primaryConcern, recommendation, observation, detailedAnalysis, analysis, skinToneAnalysis, problemAreas } = diagnosisResult;
 
   // 総合評価のテキスト
   const getOverallRating = () => {
@@ -203,6 +203,7 @@ export default function ResultPage() {
             capturedImage={capturedImage}
             scores={scores}
             eyePositions={capturedEyePositions}
+            problemAreas={problemAreas}
             language={language as 'ja' | 'ko'}
           />
         )}

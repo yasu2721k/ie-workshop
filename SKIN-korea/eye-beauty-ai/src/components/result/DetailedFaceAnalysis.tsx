@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DiagnosisScores, EyePositions } from '@/types/diagnosis';
+import { DiagnosisScores, EyePositions, ProblemAreas, ProblemPoint } from '@/types/diagnosis';
 
 interface DetailedFaceAnalysisProps {
   capturedImage: string;
   scores: DiagnosisScores;
   eyePositions?: EyePositions | null;
+  problemAreas?: ProblemAreas | null;
   language: 'ja' | 'ko';
 }
 
@@ -25,6 +26,7 @@ export default function DetailedFaceAnalysis({
   capturedImage,
   scores,
   eyePositions,
+  problemAreas,
   language,
 }: DetailedFaceAnalysisProps) {
   const [activeMode, setActiveMode] = useState<AnalysisMode>('overview');
@@ -183,14 +185,42 @@ export default function DetailedFaceAnalysis({
             C ${cx - 4} ${cy + 12}, ${cx - 8} ${cy + 8}, ${cx - 8} ${cy} Z`;
   };
 
+  // 実際のAI検出データを使用するか、フォールバックでランダム生成するかを判断
+  const getActualProblemPoints = (mode: AnalysisMode): { x: number; y: number; size: number; intensity: number; type?: string }[] => {
+    if (mode === 'overview') return [];
+
+    // 実際のproblemAreasデータがある場合はそれを使用
+    if (problemAreas && problemAreas[mode as keyof ProblemAreas]) {
+      const actualPoints = problemAreas[mode as keyof ProblemAreas];
+      if (actualPoints && actualPoints.length > 0) {
+        return actualPoints.map((point: ProblemPoint) => ({
+          x: point.x,
+          y: point.y,
+          size: 2 + (point.severity || 3) * 1.5,
+          intensity: 0.5 + ((point.severity || 3) / 5) * 0.5,
+          type: point.type,
+        }));
+      }
+    }
+
+    // フォールバック: スコアベースのランダム生成
+    const score = scores[mode as keyof DiagnosisScores];
+    return generateProblemPoints(mode, score);
+  };
+
   // 現在のモードのスコアと色を取得
   const getCurrentModeData = () => {
     if (activeMode === 'overview') return null;
     const score = scores[activeMode as keyof DiagnosisScores];
+    const actualPoints = getActualProblemPoints(activeMode);
+    const hasRealData = problemAreas && problemAreas[activeMode as keyof ProblemAreas] &&
+      problemAreas[activeMode as keyof ProblemAreas].length > 0;
+
     return {
       score,
       color: getScoreColor(score),
-      points: generateProblemPoints(activeMode, score),
+      points: actualPoints,
+      hasRealData,
     };
   };
 
@@ -321,18 +351,30 @@ export default function DetailedFaceAnalysis({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-full px-4 py-2"
+              className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-2xl px-4 py-2"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-white text-sm font-medium">
-                  {getModeLabel(activeMode)}
-                </span>
-                <span
-                  className="text-lg font-bold"
-                  style={{ color: modeData.color.main }}
-                >
-                  {modeData.score}/5
-                </span>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-white text-sm font-medium">
+                    {getModeLabel(activeMode)}
+                  </span>
+                  <span
+                    className="text-lg font-bold"
+                    style={{ color: modeData.color.main }}
+                  >
+                    {modeData.score}/5
+                  </span>
+                </div>
+                {modeData.hasRealData && (
+                  <span className="text-xs text-green-400">
+                    {language === 'ja' ? '✓ AI検出' : '✓ AI 감지'}
+                  </span>
+                )}
+                {modeData.points.length > 0 && (
+                  <span className="text-xs text-gray-300">
+                    {modeData.points.length} {language === 'ja' ? '箇所検出' : '개소 감지'}
+                  </span>
+                )}
               </div>
             </motion.div>
           )}
