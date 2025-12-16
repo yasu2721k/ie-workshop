@@ -31,16 +31,15 @@ export default function DetailedFaceAnalysis({
 }: DetailedFaceAnalysisProps) {
   const [activeMode, setActiveMode] = useState<AnalysisMode>('overview');
 
-  // X座標を反転（ミラー画像対応）
-  const mirrorX = (x: number): number => 1 - x;
-
-  // 目の位置を取得
+  // 目の位置を取得（eyePositionsがある場合は実際の位置を使用）
   const getEyeCenter = (isLeft: boolean) => {
     if (!eyePositions) {
-      return isLeft ? { x: 0.35, y: 0.42 } : { x: 0.65, y: 0.42 };
+      // デフォルト位置（画像の中央付近の目元）
+      return isLeft ? { x: 0.35, y: 0.38 } : { x: 0.65, y: 0.38 };
     }
     const eye = isLeft ? eyePositions.leftEye : eyePositions.rightEye;
-    return { x: mirrorX(eye.x), y: eye.y };
+    // カメラ画像は左右反転しているのでXを反転
+    return { x: 1 - eye.x, y: eye.y };
   };
 
   // 問題箇所のポイントを生成（スコアに基づいてドット数を調整）
@@ -171,20 +170,6 @@ export default function DetailedFaceAnalysis({
     return points;
   };
 
-  // 輪郭線を描画（目元エリア）
-  const getEyeAreaOutline = (isLeft: boolean) => {
-    const eye = getEyeCenter(isLeft);
-    const cx = eye.x * 100;
-    const cy = eye.y * 100;
-
-    // 目の周りの楕円形輪郭
-    return `M ${cx - 8} ${cy}
-            C ${cx - 8} ${cy - 5}, ${cx - 4} ${cy - 7}, ${cx} ${cy - 7}
-            C ${cx + 4} ${cy - 7}, ${cx + 8} ${cy - 5}, ${cx + 8} ${cy}
-            C ${cx + 8} ${cy + 8}, ${cx + 4} ${cy + 12}, ${cx} ${cy + 12}
-            C ${cx - 4} ${cy + 12}, ${cx - 8} ${cy + 8}, ${cx - 8} ${cy} Z`;
-  };
-
   // 実際のAI検出データを使用するか、フォールバックでランダム生成するかを判断
   const getActualProblemPoints = (mode: AnalysisMode): { x: number; y: number; size: number; intensity: number; type?: string }[] => {
     if (mode === 'overview') return [];
@@ -266,36 +251,12 @@ export default function DetailedFaceAnalysis({
           className="w-full h-full object-cover"
         />
 
-        {/* SVGオーバーレイ */}
+        {/* SVGオーバーレイ - 問題箇所のドットのみ表示 */}
         <svg
           className="absolute inset-0 w-full h-full"
-          viewBox="0 0 100 133.33"
-          preserveAspectRatio="xMidYMid slice"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
         >
-          {/* 目元エリアの輪郭線（overview時） */}
-          {activeMode === 'overview' && (
-            <>
-              <motion.path
-                d={getEyeAreaOutline(true)}
-                fill="none"
-                stroke="#4FC3F7"
-                strokeWidth="0.3"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1 }}
-              />
-              <motion.path
-                d={getEyeAreaOutline(false)}
-                fill="none"
-                stroke="#4FC3F7"
-                strokeWidth="0.3"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 1, delay: 0.2 }}
-              />
-            </>
-          )}
-
           {/* 問題箇所のドット */}
           <AnimatePresence mode="wait">
             {modeData && (
@@ -310,35 +271,15 @@ export default function DetailedFaceAnalysis({
                   <motion.circle
                     key={index}
                     cx={point.x * 100}
-                    cy={point.y * 133.33}
-                    r={point.size * 0.3}
+                    cy={point.y * 100}
+                    r={point.size * 0.8}
                     fill={modeData.color.main}
                     opacity={point.intensity}
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: point.intensity }}
-                    transition={{ delay: index * 0.01, duration: 0.3 }}
+                    transition={{ delay: index * 0.02, duration: 0.3 }}
                   />
                 ))}
-
-                {/* エリアの輪郭線 */}
-                <motion.path
-                  d={getEyeAreaOutline(true)}
-                  fill={modeData.color.light}
-                  stroke={modeData.color.main}
-                  strokeWidth="0.4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.6 }}
-                  transition={{ duration: 0.5 }}
-                />
-                <motion.path
-                  d={getEyeAreaOutline(false)}
-                  fill={modeData.color.light}
-                  stroke={modeData.color.main}
-                  strokeWidth="0.4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.6 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                />
               </motion.g>
             )}
           </AnimatePresence>
