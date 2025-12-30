@@ -16,7 +16,7 @@ interface CameraViewProps {
   onCapture: (result: CaptureResult & { eyePositions?: EyePositions }) => void;
   onError: (error: string | null) => void;
   captureMode?: 'single' | 'expression';
-  onExpressionCapture?: (neutral: CaptureResult, smile: CaptureResult) => void;
+  onExpressionCapture?: (neutral: CaptureResult & { eyePositions?: EyePositions }, smile: CaptureResult & { eyePositions?: EyePositions }) => void;
 }
 
 export default function CameraView({ onCapture, onError, captureMode = 'single', onExpressionCapture }: CameraViewProps) {
