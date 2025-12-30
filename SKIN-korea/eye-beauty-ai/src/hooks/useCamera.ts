@@ -35,11 +35,12 @@ export function useCamera(): UseCameraReturn {
     }
 
     try {
+      // Request maximum resolution available
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'user',
-          width: { ideal: 640 },
-          height: { ideal: 480 },
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 },
         },
         audio: false,
       });

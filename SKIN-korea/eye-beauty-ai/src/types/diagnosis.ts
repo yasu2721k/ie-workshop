@@ -102,6 +102,7 @@ export interface DiagnosisState {
   capturedImage: string | null;
   imageDimensions: ImageDimensions | null;
   capturedEyePositions: EyePositions | null;
+  smileImage: string | null; // 笑顔画像（表情分析用）
 
   // 解析結果（新）
   diagnosisResult: DiagnosisResult | null;
@@ -113,6 +114,9 @@ export interface DiagnosisState {
   // 解析データ（詳細）
   analysisData: AnalysisData | null;
 
+  // 問診データ
+  questionnaireData: any | null;
+
   // 強制判定フラグ（デバッグ用）
   forceType: DiagnosisType;
 
@@ -122,11 +126,12 @@ export interface DiagnosisState {
 }
 
 export interface DiagnosisContextType extends DiagnosisState {
-  setCapturedImage: (image: string, dimensions?: ImageDimensions, eyePositions?: EyePositions) => void;
+  setCapturedImage: (image: string, dimensions?: ImageDimensions, eyePositions?: EyePositions, smileImage?: string) => void;
   setDiagnosisResult: (result: DiagnosisResult) => void;
   setAnalysisData: (data: AnalysisData) => void;
   setForceType: (type: DiagnosisType) => void;
   setIsAnalyzing: (isAnalyzing: boolean) => void;
   setError: (error: string | null) => void;
+  setQuestionnaireData: (data: any) => void;
   reset: () => void;
 }

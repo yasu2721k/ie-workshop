@@ -14,6 +14,13 @@
       "denied": "カメラへのアクセスが拒否されました。設定からカメラの使用を許可してください。",
       "unsupported": "お使いのブラウザはカメラに対応していません。",
       "noFace": "顔の検出に失敗しました。再度お試しください"
+    },
+    "expressionMode": {
+      "neutral": "真顔で撮影してください",
+      "smile": "笑顔で撮影してください"
+    },
+    "expressionGuide": {
+      "smile": "笑顔を作ってください"
     }
   },
   "landing": {
@@ -73,6 +80,32 @@
         "name": "アンチエイジング美容液",
         "description": "寝ている間に集中補修"
       }
+    }
+  },
+  "questionnaire": {
+    "title": "診断前の問診",
+    "next": "次へ",
+    "previous": "戻る",
+    "complete": "診断を開始",
+    "yes": "はい",
+    "no": "いいえ",
+    "sleepHours": {
+      "question": "普段の睡眠時間は？"
+    },
+    "eyeFatigue": {
+      "question": "目の疲れやすさは？",
+      "low": "疲れにくい",
+      "medium": "普通",
+      "high": "疲れやすい"
+    },
+    "coldSensitivity": {
+      "question": "冷え性はありますか？"
+    },
+    "stressLevel": {
+      "question": "最近のストレスレベルは？",
+      "low": "低い",
+      "medium": "普通",
+      "high": "高い"
     }
   }
 }

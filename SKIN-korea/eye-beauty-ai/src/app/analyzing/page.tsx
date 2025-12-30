@@ -29,6 +29,9 @@ export default function AnalyzingPage() {
     forceType,
     setDiagnosisResult,
     setAnalysisData,
+    capturedEyePositions,
+    questionnaireData,
+    smileImage,
   } = useDiagnosis();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -103,6 +106,9 @@ export default function AnalyzingPage() {
             imageWidth: imageDimensions?.width || 640,
             imageHeight: imageDimensions?.height || 480,
             language: language,
+            eyePositions: capturedEyePositions,
+            questionnaireData: questionnaireData,
+            smileImage: smileImage,
           }),
         });
 
@@ -122,17 +128,17 @@ export default function AnalyzingPage() {
         const result: DiagnosisResult = await response.json();
         console.log('Gemini analysis result:', result);
 
-        // 肌トーン分析を実行
+        // 肌トーン分析のみ実行（クライアントサイド座標検出は無効化）
         const skinToneAnalysis = await analyzeSkinTone(capturedImage);
         console.log('Skin tone analysis:', skinToneAnalysis);
 
-        // 肌トーン分析結果を追加
-        const resultWithSkinTone: DiagnosisResult = {
+        // Geminiの結果をそのまま使用（problemAreasはGeminiから取得）
+        const resultWithEnhancements: DiagnosisResult = {
           ...result,
           skinToneAnalysis,
         };
 
-        setDiagnosisResult(resultWithSkinTone);
+        setDiagnosisResult(resultWithEnhancements);
         setAnalysisData({
           eyePositions: result.eyePositions,
         });

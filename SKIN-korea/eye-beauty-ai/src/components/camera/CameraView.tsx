@@ -15,9 +15,11 @@ import { checkFacePosition, FacePositionStatus } from '@/lib/facePositionChecker
 interface CameraViewProps {
   onCapture: (result: CaptureResult & { eyePositions?: EyePositions }) => void;
   onError: (error: string | null) => void;
+  captureMode?: 'single' | 'expression';
+  onExpressionCapture?: (neutral: CaptureResult, smile: CaptureResult) => void;
 }
 
-export default function CameraView({ onCapture, onError }: CameraViewProps) {
+export default function CameraView({ onCapture, onError, captureMode = 'single', onExpressionCapture }: CameraViewProps) {
   const { t } = useLanguage();
   const { videoRef, canvasRef, isReady, error, startCamera, captureImage } = useCamera();
   const { landmarks, isDetected, processFrame, isLoading: isFaceMeshLoading } = useFaceMesh(videoRef);
@@ -30,6 +32,9 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
   const [autoShutterCountdown, setAutoShutterCountdown] = useState<number | null>(null);
   const [isWarmupComplete, setIsWarmupComplete] = useState(false);
   const autoShutterTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [expressionStep, setExpressionStep] = useState<'neutral' | 'smile' | null>(captureMode === 'expression' ? 'neutral' : null);
+  const [neutralCapture, setNeutralCapture] = useState<CaptureResult | null>(null);
+  const [showExpressionGuide, setShowExpressionGuide] = useState(false);
 
   // カメラ開始
   useEffect(() => {
@@ -143,20 +148,40 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
     const result = captureImage();
 
     if (result) {
-      // 撮影画像をプレビューとして表示（画面をフリーズ）
-      setCapturedPreview(result.imageData);
-
-      // 少し待ってから遷移（フラッシュエフェクト用）
-      setTimeout(() => {
-        onCapture({
-          ...result,
-          eyePositions: currentEyePositions || undefined,
-        });
-      }, 300);
+      if (captureMode === 'expression' && expressionStep) {
+        if (expressionStep === 'neutral') {
+          // 真顔撮影完了
+          setNeutralCapture(result);
+          setCapturedPreview(null); // プレビューをクリア
+          setExpressionStep('smile');
+          setShowExpressionGuide(true);
+          setIsCapturing(false);
+          
+          // 2秒後にガイドを非表示
+          setTimeout(() => {
+            setShowExpressionGuide(false);
+          }, 2000);
+        } else if (expressionStep === 'smile' && neutralCapture && onExpressionCapture) {
+          // 笑顔撮影完了
+          setCapturedPreview(result.imageData);
+          setTimeout(() => {
+            onExpressionCapture(neutralCapture, result);
+          }, 300);
+        }
+      } else {
+        // 通常の単一撮影モード
+        setCapturedPreview(result.imageData);
+        setTimeout(() => {
+          onCapture({
+            ...result,
+            eyePositions: currentEyePositions || undefined,
+          });
+        }, 300);
+      }
     } else {
       setIsCapturing(false);
     }
-  }, [captureImage, onCapture, currentEyePositions, isCapturing]);
+  }, [captureImage, onCapture, currentEyePositions, isCapturing, captureMode, expressionStep, neutralCapture, onExpressionCapture]);
 
   // 自動シャッター条件チェック
   const isAllConditionsMet = !!(faceStatus &&
@@ -278,6 +303,23 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
           />
         )}
 
+        {/* Expression Guide */}
+        {showExpressionGuide && expressionStep === 'smile' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute inset-0 flex items-center justify-center bg-black/50"
+          >
+            <div className="bg-white/90 rounded-2xl p-8 max-w-xs text-center">
+              <div className="text-5xl mb-4">😊</div>
+              <p className="text-xl font-medium text-gray-800">
+                {t('camera.expressionGuide.smile')}
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Loading State */}
         {(!isReady || isFaceMeshLoading) && !error && (
           <div className="absolute inset-0 flex items-center justify-center bg-[#1A1A1A]/80">
@@ -351,9 +393,13 @@ export default function CameraView({ onCapture, onError }: CameraViewProps) {
       <p className="text-center text-white/80 mt-4 text-sm font-light tracking-wide">
         {isCapturing
           ? t('common.processing')
-          : faceStatus?.isSizeOK && isDetected
-            ? t('camera.capture')
-            : ''
+          : captureMode === 'expression' && expressionStep
+            ? expressionStep === 'neutral'
+              ? t('camera.expressionMode.neutral')
+              : t('camera.expressionMode.smile')
+            : faceStatus?.isSizeOK && isDetected
+              ? t('camera.capture')
+              : ''
         }
       </p>
     </div>

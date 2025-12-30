@@ -10,6 +10,7 @@ import {
   ImageDimensions,
   EyePositions,
 } from '@/types/diagnosis';
+import { QuestionnaireData } from '@/components/camera/QuestionnaireModal';
 
 const initialState: DiagnosisState = {
   capturedImage: null,
@@ -22,6 +23,8 @@ const initialState: DiagnosisState = {
   forceType: null,
   isAnalyzing: false,
   error: null,
+  questionnaireData: null,
+  smileImage: null,
 };
 
 const DiagnosisContext = createContext<DiagnosisContextType | undefined>(undefined);
@@ -29,12 +32,13 @@ const DiagnosisContext = createContext<DiagnosisContextType | undefined>(undefin
 export function DiagnosisProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<DiagnosisState>(initialState);
 
-  const setCapturedImage = useCallback((image: string, dimensions?: ImageDimensions, eyePositions?: EyePositions) => {
+  const setCapturedImage = useCallback((image: string, dimensions?: ImageDimensions, eyePositions?: EyePositions, smileImage?: string) => {
     setState((prev) => ({
       ...prev,
       capturedImage: image,
       imageDimensions: dimensions || null,
       capturedEyePositions: eyePositions || null,
+      smileImage: smileImage || null,
     }));
   }, []);
 
@@ -64,6 +68,10 @@ export function DiagnosisProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, error, isAnalyzing: false }));
   }, []);
 
+  const setQuestionnaireData = useCallback((data: QuestionnaireData) => {
+    setState((prev) => ({ ...prev, questionnaireData: data }));
+  }, []);
+
   const reset = useCallback(() => {
     setState(initialState);
   }, []);
@@ -78,6 +86,7 @@ export function DiagnosisProvider({ children }: { children: ReactNode }) {
         setForceType,
         setIsAnalyzing,
         setError,
+        setQuestionnaireData,
         reset,
       }}
     >

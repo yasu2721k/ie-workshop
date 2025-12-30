@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { calculateEyeAge } from '@/lib/eyeAgeCalculator';
 import { DiagnosisScores, ProblemAreas } from '@/types/diagnosis';
 import { analyzeWithRekognition, RekognitionFaceData } from '@/lib/rekognitionService';
+import { cropEyeRegions, createExpressionComparison } from '@/lib/imageProcessing';
 
 // Gemini 3 Pro Preview 初期化
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -14,31 +15,83 @@ interface EyeAnalysisData {
   imageQuality: number;
 }
 
+// 目の位置データ
+interface EyePositionData {
+  leftEye: { x: number; y: number };
+  rightEye: { x: number; y: number };
+}
+
 // プロンプト生成関数（目元診断特化）
-function generatePromptJA(eyeData?: EyeAnalysisData) {
+function generatePromptJA(eyeData?: EyeAnalysisData, eyePositions?: EyePositionData, questionnaireData?: any, isExpressionAnalysis?: boolean) {
   let objectiveData = '';
 
   if (eyeData) {
     objectiveData = `
 【参考データ】
-- 推定年齢: ${eyeData.estimatedAge}歳
 - 肌の明るさ: ${eyeData.skinBrightness}/100
 - 画像品質: ${eyeData.imageQuality}/100
 
-上記を参考に、目元の状態を厳格に評価してください。
 肌の明るさが低い場合はくすみの評価を厳しくしてください。
 `;
   }
 
-  return `あなたは目元の美容状態を分析するAIアドバイザーです。この顔写真から目元の見た目の特徴を詳しく観察してください。
+  // 目の位置情報（MediaPipeから取得した実際の座標）
+  let eyePositionInfo = '';
+  if (eyePositions) {
+    // カメラ画像は左右反転しているので、座標を反転
+    const leftX = (1 - eyePositions.leftEye.x).toFixed(2);
+    const leftY = eyePositions.leftEye.y.toFixed(2);
+    const rightX = (1 - eyePositions.rightEye.x).toFixed(2);
+    const rightY = eyePositions.rightEye.y.toFixed(2);
+
+    eyePositionInfo = `
+【重要: 検出済みの目の位置】
+画像内で検出された目の正確な位置:
+- 左目の中心: x=${leftX}, y=${leftY}
+- 右目の中心: x=${rightX}, y=${rightY}
+
+この座標を基準にして、問題箇所の座標を指定してください:
+- クマは目の中心から下方向（y座標を+0.03〜+0.08程度）
+- 目尻のシワは目の外側（左目ならx座標を+0.05〜+0.10、右目ならx座標を-0.05〜-0.10）
+- 目の下のたるみは目の下方（y座標を+0.02〜+0.06程度）
+`;
+  }
+
+  let systemPrompt = `あなたは目元の美容状態を分析するAIアドバイザーです。`;
+  
+  if (isExpressionAnalysis) {
+    systemPrompt += `左側の真顔画像と右側の笑顔画像を比較して、表情変化によって現れる潜在的なシワやたるみを特定してください。`;
+  } else {
+    systemPrompt += `この高解像度の目元画像から、肌のキメ、微細なシワ、色調の変化を詳しく観察してください。`;
+  }
+
+  let questionnaireInfo = '';
+  if (questionnaireData) {
+    questionnaireInfo = `
+【問診データによる追加分析指示】
+- 睡眠時間: ${questionnaireData.sleepHours}時間
+  ${questionnaireData.sleepHours < 6 ? '→ 睡眠不足による血行不良、クマの評価を厳しく' : ''}
+- 目の疲労度: ${questionnaireData.eyeFatigue}
+  ${questionnaireData.eyeFatigue === 'high' ? '→ 眼精疲労によるクマ、たるみの評価を重視' : ''}
+- 冷え性: ${questionnaireData.coldSensitivity ? 'あり' : 'なし'}
+  ${questionnaireData.coldSensitivity ? '→ 血行不良による青クマの可能性を考慮' : ''}
+- ストレスレベル: ${questionnaireData.stressLevel}
+  ${questionnaireData.stressLevel === 'high' ? '→ ストレスによる肌の不調、くすみを重視' : ''}
+
+問診データと画像の特徴を掛け合わせて、クマやシワの根本原因を論理的に推論してください。
+`;
+  }
+
+  return systemPrompt + `
 
 【重要な指示】
 - 写真を拡大して目元周辺を詳細に観察すること
 - 厳格に評価すること（甘い評価は禁止）
 - 実際に見える特徴のみを根拠に判断すること
 - 「普通」や「問題なし」に偏らず、細かい特徴も検出すること
+- 分析結果に年齢への言及を含めないこと
 - ※これは美容目的の参考情報であり、医療診断ではありません
-${objectiveData}
+${objectiveData}${eyePositionInfo}${questionnaireInfo}
 【評価基準 - 厳格に適用】
 
 ■ darkCircles（クマ）1-5点
@@ -133,30 +186,76 @@ ${objectiveData}
 }`;
 }
 
-function generatePromptKO(eyeData?: EyeAnalysisData) {
+function generatePromptKO(eyeData?: EyeAnalysisData, eyePositions?: EyePositionData, questionnaireData?: any, isExpressionAnalysis?: boolean) {
   let objectiveData = '';
 
   if (eyeData) {
     objectiveData = `
 【참고 데이터】
-- 추정 나이: ${eyeData.estimatedAge}세
 - 피부 밝기: ${eyeData.skinBrightness}/100
 - 이미지 품질: ${eyeData.imageQuality}/100
 
-위 데이터를 참고하여 눈가 상태를 엄격하게 평가해주세요.
 피부 밝기가 낮은 경우 칙칙함 평가를 엄격하게 해주세요.
 `;
   }
 
-  return `당신은 눈가의 미용 상태를 분석하는 AI 어드바이저입니다. 이 얼굴 사진에서 눈가의 외관 특징을 자세히 관찰해주세요.
+  // 목의 위치 정보（MediaPipe에서 취득한 실제 좌표）
+  let eyePositionInfo = '';
+  if (eyePositions) {
+    // 카메라 이미지는 좌우 반전되어 있으므로 좌표를 반전
+    const leftX = (1 - eyePositions.leftEye.x).toFixed(2);
+    const leftY = eyePositions.leftEye.y.toFixed(2);
+    const rightX = (1 - eyePositions.rightEye.x).toFixed(2);
+    const rightY = eyePositions.rightEye.y.toFixed(2);
+
+    eyePositionInfo = `
+【중요: 감지된 눈의 위치】
+이미지에서 감지된 눈의 정확한 위치:
+- 왼쪽 눈 중심: x=${leftX}, y=${leftY}
+- 오른쪽 눈 중심: x=${rightX}, y=${rightY}
+
+이 좌표를 기준으로 문제 부위의 좌표를 지정해주세요:
+- 다크서클은 눈 중심에서 아래쪽 방향(y좌표를 +0.03~+0.08 정도)
+- 눈꼬리 주름은 눈 바깥쪽(왼눈은 x좌표를 +0.05~+0.10, 오른눈은 x좌표를 -0.05~-0.10)
+- 눈 아래 처짐은 눈 아래쪽(y좌표를 +0.02~+0.06 정도)
+`;
+  }
+
+  let systemPrompt = `당신은 눈가의 미용 상태를 분석하는 AI 어드바이저입니다.`;
+  
+  if (isExpressionAnalysis) {
+    systemPrompt += `왼쪽의 무표정 이미지와 오른쪽의 웃는 이미지를 비교하여 표정 변화로 나타나는 잠재적인 주름과 처짐을 특정해주세요.`;
+  } else {
+    systemPrompt += `이 고해상도 눈가 이미지에서 피부 결, 미세한 주름, 색조 변화를 자세히 관찰해주세요.`;
+  }
+
+  let questionnaireInfo = '';
+  if (questionnaireData) {
+    questionnaireInfo = `
+【문진 데이터에 의한 추가 분석 지시】
+- 수면 시간: ${questionnaireData.sleepHours}시간
+  ${questionnaireData.sleepHours < 6 ? '→ 수면 부족에 의한 혈행불량, 다크서클 평가를 엄격히' : ''}
+- 눈의 피로도: ${questionnaireData.eyeFatigue}
+  ${questionnaireData.eyeFatigue === 'high' ? '→ 안정피로에 의한 다크서클, 처짐 평가를 중시' : ''}
+- 냉증: ${questionnaireData.coldSensitivity ? '있음' : '없음'}
+  ${questionnaireData.coldSensitivity ? '→ 혈행불량에 의한 청색 다크서클 가능성을 고려' : ''}
+- 스트레스 레벨: ${questionnaireData.stressLevel}
+  ${questionnaireData.stressLevel === 'high' ? '→ 스트레스에 의한 피부 불균형, 칙칙함을 중시' : ''}
+
+문진 데이터와 이미지 특징을 결합하여 다크서클과 주름의 근본 원인을 논리적으로 추론해주세요.
+`;
+  }
+
+  return systemPrompt + `
 
 【중요한 지시】
 - 사진을 확대하여 눈가 주변을 상세히 관찰할 것
 - 엄격하게 평가할 것 (관대한 평가 금지)
 - 실제로 보이는 특징만을 근거로 판단할 것
 - "보통"이나 "문제없음"에 치우치지 말고 세세한 특징도 감지할 것
+- 분석 결과에 나이에 대한 언급을 포함하지 말 것
 - ※이것은 미용 목적의 참고 정보이며 의료 진단이 아닙니다
-${objectiveData}
+${objectiveData}${eyePositionInfo}${questionnaireInfo}
 【평가 기준 - 엄격히 적용】
 
 ■ darkCircles(다크서클) 1-5점
@@ -254,7 +353,7 @@ ${objectiveData}
 
 export async function POST(request: NextRequest) {
   try {
-    const { image, eyePositions, language = 'ja' } = await request.json();
+    const { image, eyePositions, language = 'ja', questionnaireData, smileImage, useROICrop = true } = await request.json();
 
     if (!image) {
       return NextResponse.json(
@@ -274,7 +373,36 @@ export async function POST(request: NextRequest) {
     // Base64データの整形
     const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
 
-    // ========== STEP 1: AWS Rekognition で目元診断用データ取得 ==========
+    // ========== STEP 1: ROI Crop if enabled and eye positions available ==========
+    let processedImage = image;
+    let isExpressionAnalysis = false;
+    
+    if (useROICrop && eyePositions) {
+      try {
+        // 目元をクロップ
+        const { leftEyeImage, rightEyeImage } = await cropEyeRegions(image, eyePositions);
+        
+        // 表情分析モードの場合
+        if (smileImage) {
+          const { leftEyeImage: leftSmile, rightEyeImage: rightSmile } = await cropEyeRegions(smileImage, eyePositions);
+          
+          // 左右の目の比較画像を作成
+          const leftComparison = await createExpressionComparison(leftEyeImage, leftSmile);
+          const rightComparison = await createExpressionComparison(rightEyeImage, rightSmile);
+          
+          // 両目の比較を1つの画像に結合（仮想的に処理）
+          processedImage = leftComparison; // 簡略化のため左目のみを使用
+          isExpressionAnalysis = true;
+        } else {
+          // 単一撮影モードでは左右の目を結合（ここでは左目のみを使用）
+          processedImage = leftEyeImage;
+        }
+      } catch (error) {
+        console.warn('ROI cropping failed, using full image:', error);
+      }
+    }
+
+    // ========== STEP 2: AWS Rekognition で目元診断用データ取得 ==========
     let eyeAnalysisData: EyeAnalysisData | undefined;
     let rekognitionFaceData: RekognitionFaceData | undefined;
 
@@ -298,10 +426,19 @@ export async function POST(request: NextRequest) {
       console.log('AWS credentials not configured, skipping Rekognition');
     }
 
-    // ========== STEP 2: プロンプト生成（目元診断データを含む） ==========
+    // ========== STEP 2: プロンプト生成（目元診断データと目の位置を含む） ==========
+    // eyePositionsをEyePositionData形式に変換
+    let eyePositionData: EyePositionData | undefined;
+    if (eyePositions && eyePositions.leftEye && eyePositions.rightEye) {
+      eyePositionData = {
+        leftEye: eyePositions.leftEye,
+        rightEye: eyePositions.rightEye,
+      };
+    }
+
     const ANALYSIS_PROMPT = language === 'ko'
-      ? generatePromptKO(eyeAnalysisData)
-      : generatePromptJA(eyeAnalysisData);
+      ? generatePromptKO(eyeAnalysisData, eyePositionData, questionnaireData, isExpressionAnalysis)
+      : generatePromptJA(eyeAnalysisData, eyePositionData, questionnaireData, isExpressionAnalysis);
 
     // ========== STEP 3: Gemini 3 Pro で分析 ==========
     const modelName = process.env.GEMINI_MODEL || 'gemini-3-pro-preview';
@@ -314,12 +451,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 画像とプロンプトを送信
+    // 画像とプロンプトを送信（処理済み画像を使用）
+    const processedBase64 = processedImage.replace(/^data:image\/\w+;base64,/, '');
     const result = await model.generateContent([
       {
         inlineData: {
           mimeType: 'image/jpeg',
-          data: base64Data,
+          data: processedBase64,
         },
       },
       { text: ANALYSIS_PROMPT },

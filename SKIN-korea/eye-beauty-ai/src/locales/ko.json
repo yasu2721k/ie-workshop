@@ -20,6 +20,13 @@
       "denied": "카메라 접근이 거부되었습니다. 설정에서 카메라 사용을 허용해주세요.",
       "unsupported": "사용 중인 브라우저는 카메라를 지원하지 않습니다.",
       "noFace": "얼굴 인식에 실패했습니다. 다시 시도해주세요"
+    },
+    "expressionMode": {
+      "neutral": "무표정으로 촬영해주세요",
+      "smile": "웃는 표정으로 촬영해주세요"
+    },
+    "expressionGuide": {
+      "smile": "웃는 표정을 만들어주세요"
     }
   },
   "analyzing": {
@@ -73,6 +80,32 @@
         "name": "안티에이징 세럼",
         "description": "자는 동안 집중 보수"
       }
+    }
+  },
+  "questionnaire": {
+    "title": "진단 전 문진",
+    "next": "다음",
+    "previous": "이전",
+    "complete": "진단 시작",
+    "yes": "예",
+    "no": "아니오",
+    "sleepHours": {
+      "question": "평소 수면 시간은?"
+    },
+    "eyeFatigue": {
+      "question": "눈의 피로도는?",
+      "low": "피로하지 않음",
+      "medium": "보통",
+      "high": "피로함"
+    },
+    "coldSensitivity": {
+      "question": "냉증이 있으신가요?"
+    },
+    "stressLevel": {
+      "question": "최근 스트레스 레벨은?",
+      "low": "낮음",
+      "medium": "보통",
+      "high": "높음"
     }
   }
 }

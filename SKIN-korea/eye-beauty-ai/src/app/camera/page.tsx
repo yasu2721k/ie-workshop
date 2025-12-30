@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useDiagnosis } from '@/contexts/DiagnosisContext';
 import BackButton from '@/components/ui/BackButton';
 import CameraView from '@/components/camera/CameraView';
+import QuestionnaireModal, { QuestionnaireData } from '@/components/camera/QuestionnaireModal';
 import Modal from '@/components/ui/Modal';
 import { ROUTES } from '@/lib/constants';
 import { EyePositions } from '@/types/diagnosis';
@@ -13,8 +14,10 @@ import { EyePositions } from '@/types/diagnosis';
 export default function CameraPage() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { setCapturedImage } = useDiagnosis();
+  const { setCapturedImage, setQuestionnaireData } = useDiagnosis();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showQuestionnaire, setShowQuestionnaire] = useState(true);
+  const [captureMode, setCaptureMode] = useState<'single' | 'expression'>('expression');
 
   const handleCapture = useCallback((result: { imageData: string; width: number; height: number; eyePositions?: EyePositions }) => {
     setCapturedImage(
@@ -25,9 +28,25 @@ export default function CameraPage() {
     router.push(ROUTES.ANALYZING);
   }, [setCapturedImage, router]);
 
+  const handleExpressionCapture = useCallback((neutral: any, smile: any) => {
+    // Store both captures for expression analysis
+    setCapturedImage(
+      neutral.imageData,
+      { width: neutral.width, height: neutral.height },
+      neutral.eyePositions,
+      smile.imageData
+    );
+    router.push(ROUTES.ANALYZING);
+  }, [setCapturedImage, router]);
+
   const handleError = useCallback((error: string | null) => {
     setErrorMessage(error);
   }, []);
+
+  const handleQuestionnaireComplete = useCallback((data: QuestionnaireData) => {
+    setQuestionnaireData(data);
+    setShowQuestionnaire(false);
+  }, [setQuestionnaireData]);
 
   return (
     <main className="min-h-screen flex flex-col bg-[#1A1A1A]">
@@ -45,7 +64,14 @@ export default function CameraPage() {
 
       {/* Camera View */}
       <div className="flex-1 flex items-center justify-center px-4 py-6">
-        <CameraView onCapture={handleCapture} onError={handleError} />
+        {!showQuestionnaire && (
+          <CameraView 
+            onCapture={handleCapture} 
+            onError={handleError}
+            captureMode={captureMode}
+            onExpressionCapture={handleExpressionCapture}
+          />
+        )}
       </div>
 
       {/* Error Modal */}
@@ -62,6 +88,12 @@ export default function CameraPage() {
           {t('common.close')}
         </button>
       </Modal>
+
+      {/* Questionnaire Modal */}
+      <QuestionnaireModal
+        isOpen={showQuestionnaire}
+        onComplete={handleQuestionnaireComplete}
+      />
     </main>
   );
 }
