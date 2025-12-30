@@ -33,7 +33,7 @@ export default function CameraView({ onCapture, onError, captureMode = 'single',
   const [isWarmupComplete, setIsWarmupComplete] = useState(false);
   const autoShutterTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [expressionStep, setExpressionStep] = useState<'neutral' | 'smile' | null>(captureMode === 'expression' ? 'neutral' : null);
-  const [neutralCapture, setNeutralCapture] = useState<CaptureResult | null>(null);
+  const [neutralCapture, setNeutralCapture] = useState<(CaptureResult & { eyePositions?: EyePositions }) | null>(null);
   const [showExpressionGuide, setShowExpressionGuide] = useState(false);
 
   // カメラ開始
@@ -151,7 +151,10 @@ export default function CameraView({ onCapture, onError, captureMode = 'single',
       if (captureMode === 'expression' && expressionStep) {
         if (expressionStep === 'neutral') {
           // 真顔撮影完了
-          setNeutralCapture(result);
+          setNeutralCapture({
+            ...result,
+            eyePositions: currentEyePositions || undefined,
+          });
           setCapturedPreview(null); // プレビューをクリア
           setExpressionStep('smile');
           setShowExpressionGuide(true);
@@ -165,7 +168,10 @@ export default function CameraView({ onCapture, onError, captureMode = 'single',
           // 笑顔撮影完了
           setCapturedPreview(result.imageData);
           setTimeout(() => {
-            onExpressionCapture(neutralCapture, result);
+            onExpressionCapture(neutralCapture, {
+              ...result,
+              eyePositions: currentEyePositions || undefined,
+            });
           }, 300);
         }
       } else {

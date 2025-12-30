@@ -30,10 +30,13 @@ export default function CameraPage() {
 
   const handleExpressionCapture = useCallback((neutral: any, smile: any) => {
     // Store both captures for expression analysis
+    console.log('Expression capture - neutral eyePositions:', neutral.eyePositions);
+    console.log('Expression capture - smile eyePositions:', smile.eyePositions);
+    
     setCapturedImage(
       neutral.imageData,
       { width: neutral.width, height: neutral.height },
-      neutral.eyePositions,
+      neutral.eyePositions || smile.eyePositions, // Use neutral or smile eye positions
       smile.imageData
     );
     router.push(ROUTES.ANALYZING);

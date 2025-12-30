@@ -354,6 +354,16 @@ ${objectiveData}${eyePositionInfo}${questionnaireInfo}
 export async function POST(request: NextRequest) {
   try {
     const { image, eyePositions, language = 'ja', questionnaireData, smileImage, useROICrop = true } = await request.json();
+    
+    // デバッグ用ログ
+    console.log('=== Analysis Request Debug ===');
+    console.log('Has eyePositions:', !!eyePositions);
+    console.log('Has questionnaireData:', !!questionnaireData);
+    console.log('Has smileImage:', !!smileImage);
+    console.log('useROICrop:', useROICrop);
+    if (questionnaireData) {
+      console.log('Questionnaire data:', questionnaireData);
+    }
 
     if (!image) {
       return NextResponse.json(
@@ -379,6 +389,7 @@ export async function POST(request: NextRequest) {
     
     if (useROICrop && eyePositions) {
       try {
+        console.log('Starting ROI crop with eyePositions:', eyePositions);
         // 目元をクロップ
         const { leftEyeImage, rightEyeImage } = await cropEyeRegions(image, eyePositions);
         
@@ -439,6 +450,13 @@ export async function POST(request: NextRequest) {
     const ANALYSIS_PROMPT = language === 'ko'
       ? generatePromptKO(eyeAnalysisData, eyePositionData, questionnaireData, isExpressionAnalysis)
       : generatePromptJA(eyeAnalysisData, eyePositionData, questionnaireData, isExpressionAnalysis);
+    
+    console.log('=== Gemini Prompt Debug ===');
+    console.log('Is expression analysis:', isExpressionAnalysis);
+    console.log('Has questionnaire data in prompt:', !!questionnaireData);
+    if (questionnaireData) {
+      console.log('Prompt includes questionnaire analysis');
+    }
 
     // ========== STEP 3: Gemini 3 Pro で分析 ==========
     const modelName = process.env.GEMINI_MODEL || 'gemini-3-pro-preview';
