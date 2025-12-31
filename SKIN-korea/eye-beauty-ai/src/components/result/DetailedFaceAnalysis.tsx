@@ -3,6 +3,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DiagnosisScores, EyePositions, ProblemAreas, ProblemPoint } from '@/types/diagnosis';
+import dynamic from 'next/dynamic';
+
+// クライアントサイドのみで実行するためdynamic importを使用
+const AdvancedVisualization = dynamic(() => import('./AdvancedVisualization'), {
+  ssr: false,
+});
 
 interface DetailedFaceAnalysisProps {
   capturedImage: string;
@@ -50,8 +56,8 @@ export default function DetailedFaceAnalysis({
     const points: { x: number; y: number; size: number; intensity: number }[] = [];
 
     // スコアが高いほどドットは少ない
-    const baseCount = Math.max(3, (5 - score) * 8);
-    const intensity = Math.max(0.3, (5 - score) / 5);
+    const baseCount = Math.max(3, (5 - score) * 4); // ドット数を減らした
+    const intensity = Math.max(0.2, (5 - score) / 6); // 透明度を抑えた
 
     const leftEye = getEyeCenter(true);
     const rightEye = getEyeCenter(false);
@@ -62,17 +68,17 @@ export default function DetailedFaceAnalysis({
         for (let i = 0; i < baseCount; i++) {
           // 左目の下
           points.push({
-            x: leftEye.x + (Math.random() - 0.5) * 0.12,
-            y: leftEye.y + 0.06 + Math.random() * 0.06,
-            size: 2 + Math.random() * 3,
-            intensity: intensity * (0.7 + Math.random() * 0.3),
+            x: leftEye.x + (Math.random() - 0.5) * 0.08,
+            y: leftEye.y + 0.04 + Math.random() * 0.04,
+            size: 1 + Math.random() * 1.5,
+            intensity: intensity * (0.5 + Math.random() * 0.3),
           });
           // 右目の下
           points.push({
-            x: rightEye.x + (Math.random() - 0.5) * 0.12,
-            y: rightEye.y + 0.06 + Math.random() * 0.06,
-            size: 2 + Math.random() * 3,
-            intensity: intensity * (0.7 + Math.random() * 0.3),
+            x: rightEye.x + (Math.random() - 0.5) * 0.08,
+            y: rightEye.y + 0.04 + Math.random() * 0.04,
+            size: 1 + Math.random() * 1.5,
+            intensity: intensity * (0.5 + Math.random() * 0.3),
           });
         }
         break;
@@ -82,32 +88,32 @@ export default function DetailedFaceAnalysis({
         for (let i = 0; i < baseCount / 2; i++) {
           // 左目尻
           points.push({
-            x: leftEye.x + 0.08 + Math.random() * 0.04,
-            y: leftEye.y + (Math.random() - 0.5) * 0.08,
-            size: 1 + Math.random() * 2,
-            intensity: intensity * (0.6 + Math.random() * 0.4),
+            x: leftEye.x + 0.06 + Math.random() * 0.03,
+            y: leftEye.y + (Math.random() - 0.5) * 0.05,
+            size: 0.8 + Math.random() * 1,
+            intensity: intensity * (0.4 + Math.random() * 0.3),
           });
           // 右目尻
           points.push({
-            x: rightEye.x - 0.08 - Math.random() * 0.04,
-            y: rightEye.y + (Math.random() - 0.5) * 0.08,
-            size: 1 + Math.random() * 2,
-            intensity: intensity * (0.6 + Math.random() * 0.4),
+            x: rightEye.x - 0.06 - Math.random() * 0.03,
+            y: rightEye.y + (Math.random() - 0.5) * 0.05,
+            size: 0.8 + Math.random() * 1,
+            intensity: intensity * (0.4 + Math.random() * 0.3),
           });
         }
         // 目の下のシワ
         for (let i = 0; i < baseCount / 3; i++) {
           points.push({
-            x: leftEye.x + (Math.random() - 0.5) * 0.1,
-            y: leftEye.y + 0.04 + Math.random() * 0.03,
-            size: 1 + Math.random() * 1.5,
-            intensity: intensity * 0.5,
+            x: leftEye.x + (Math.random() - 0.5) * 0.06,
+            y: leftEye.y + 0.03 + Math.random() * 0.02,
+            size: 0.6 + Math.random() * 0.8,
+            intensity: intensity * 0.4,
           });
           points.push({
-            x: rightEye.x + (Math.random() - 0.5) * 0.1,
-            y: rightEye.y + 0.04 + Math.random() * 0.03,
-            size: 1 + Math.random() * 1.5,
-            intensity: intensity * 0.5,
+            x: rightEye.x + (Math.random() - 0.5) * 0.06,
+            y: rightEye.y + 0.03 + Math.random() * 0.02,
+            size: 0.6 + Math.random() * 0.8,
+            intensity: intensity * 0.4,
           });
         }
         break;
@@ -116,34 +122,34 @@ export default function DetailedFaceAnalysis({
         // 目の下全体にエリアを表示
         for (let i = 0; i < baseCount; i++) {
           points.push({
-            x: leftEye.x + (Math.random() - 0.5) * 0.15,
-            y: leftEye.y + 0.05 + Math.random() * 0.08,
-            size: 3 + Math.random() * 4,
-            intensity: intensity * (0.5 + Math.random() * 0.3),
+            x: leftEye.x + (Math.random() - 0.5) * 0.1,
+            y: leftEye.y + 0.04 + Math.random() * 0.05,
+            size: 1.5 + Math.random() * 2,
+            intensity: intensity * (0.4 + Math.random() * 0.2),
           });
           points.push({
-            x: rightEye.x + (Math.random() - 0.5) * 0.15,
-            y: rightEye.y + 0.05 + Math.random() * 0.08,
-            size: 3 + Math.random() * 4,
-            intensity: intensity * (0.5 + Math.random() * 0.3),
+            x: rightEye.x + (Math.random() - 0.5) * 0.1,
+            y: rightEye.y + 0.04 + Math.random() * 0.05,
+            size: 1.5 + Math.random() * 2,
+            intensity: intensity * (0.4 + Math.random() * 0.2),
           });
         }
         break;
 
       case 'dullness':
         // 目の周り全体にくすみを表示
-        for (let i = 0; i < baseCount * 1.5; i++) {
+        for (let i = 0; i < baseCount; i++) {
           points.push({
-            x: leftEye.x + (Math.random() - 0.5) * 0.18,
-            y: leftEye.y + (Math.random() - 0.3) * 0.15,
-            size: 4 + Math.random() * 5,
-            intensity: intensity * (0.3 + Math.random() * 0.4),
+            x: leftEye.x + (Math.random() - 0.5) * 0.1,
+            y: leftEye.y + (Math.random() - 0.3) * 0.08,
+            size: 1.5 + Math.random() * 2,
+            intensity: intensity * (0.25 + Math.random() * 0.25),
           });
           points.push({
-            x: rightEye.x + (Math.random() - 0.5) * 0.18,
-            y: rightEye.y + (Math.random() - 0.3) * 0.15,
-            size: 4 + Math.random() * 5,
-            intensity: intensity * (0.3 + Math.random() * 0.4),
+            x: rightEye.x + (Math.random() - 0.5) * 0.1,
+            y: rightEye.y + (Math.random() - 0.3) * 0.08,
+            size: 1.5 + Math.random() * 2,
+            intensity: intensity * (0.25 + Math.random() * 0.25),
           });
         }
         break;
@@ -152,16 +158,16 @@ export default function DetailedFaceAnalysis({
         // 乾燥エリアを表示
         for (let i = 0; i < baseCount; i++) {
           points.push({
-            x: leftEye.x + (Math.random() - 0.5) * 0.14,
-            y: leftEye.y + 0.02 + Math.random() * 0.1,
-            size: 2 + Math.random() * 3,
-            intensity: intensity * (0.4 + Math.random() * 0.4),
+            x: leftEye.x + (Math.random() - 0.5) * 0.08,
+            y: leftEye.y + 0.02 + Math.random() * 0.06,
+            size: 1 + Math.random() * 1.5,
+            intensity: intensity * (0.3 + Math.random() * 0.25),
           });
           points.push({
-            x: rightEye.x + (Math.random() - 0.5) * 0.14,
-            y: rightEye.y + 0.02 + Math.random() * 0.1,
-            size: 2 + Math.random() * 3,
-            intensity: intensity * (0.4 + Math.random() * 0.4),
+            x: rightEye.x + (Math.random() - 0.5) * 0.08,
+            y: rightEye.y + 0.02 + Math.random() * 0.06,
+            size: 1 + Math.random() * 1.5,
+            intensity: intensity * (0.3 + Math.random() * 0.25),
           });
         }
         break;
@@ -181,8 +187,8 @@ export default function DetailedFaceAnalysis({
         return actualPoints.map((point: ProblemPoint) => ({
           x: point.x,
           y: point.y,
-          size: 2 + (point.severity || 3) * 1.5,
-          intensity: 0.5 + ((point.severity || 3) / 5) * 0.5,
+          size: 1 + (point.severity || 3) * 0.5, // サイズを小さくした
+          intensity: 0.4 + ((point.severity || 3) / 5) * 0.3, // 透明度を抑えた
           type: point.type,
         }));
       }
@@ -245,45 +251,58 @@ export default function DetailedFaceAnalysis({
 
       {/* 画像とオーバーレイ */}
       <div className="relative w-full aspect-[3/4] bg-[#1a1a1a]">
-        <img
-          src={capturedImage}
-          alt="分析画像"
-          className="w-full h-full object-cover"
-        />
+        {/* 高度な可視化モード（クマ、シワ、潤い）の場合 */}
+        {(activeMode === 'darkCircles' || activeMode === 'wrinkles' || activeMode === 'moisture') ? (
+          <AdvancedVisualization
+            capturedImage={capturedImage}
+            scores={scores}
+            problemAreas={problemAreas}
+            mode={activeMode}
+          />
+        ) : (
+          <>
+            <img
+              src={capturedImage}
+              alt="分析画像"
+              className="w-full h-full object-cover"
+            />
 
-        {/* SVGオーバーレイ - 問題箇所のドットのみ表示 */}
-        <svg
-          className="absolute inset-0 w-full h-full"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-        >
-          {/* 問題箇所のドット */}
-          <AnimatePresence mode="wait">
-            {modeData && (
-              <motion.g
-                key={activeMode}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+            {/* SVGオーバーレイ - その他のモードのドット表示 */}
+            {(activeMode === 'firmness' || activeMode === 'dullness' || activeMode === 'overview') && (
+              <svg
+                className="absolute inset-0 w-full h-full"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
               >
-                {modeData.points.map((point, index) => (
-                  <motion.circle
-                    key={index}
-                    cx={point.x * 100}
-                    cy={point.y * 100}
-                    r={point.size * 0.8}
-                    fill={modeData.color.main}
-                    opacity={point.intensity}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: point.intensity }}
-                    transition={{ delay: index * 0.02, duration: 0.3 }}
-                  />
-                ))}
-              </motion.g>
+                <AnimatePresence mode="wait">
+                  {modeData && (
+                    <motion.g
+                      key={activeMode}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {modeData.points.map((point, index) => (
+                        <motion.circle
+                          key={index}
+                          cx={point.x * 100}
+                          cy={point.y * 100}
+                          r={Math.min(point.size * 0.4, 2.5)}
+                          fill={modeData.color.main}
+                          opacity={Math.min(point.intensity, 0.7)}
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: Math.min(point.intensity, 0.7) }}
+                          transition={{ delay: index * 0.02, duration: 0.3 }}
+                        />
+                      ))}
+                    </motion.g>
+                  )}
+                </AnimatePresence>
+              </svg>
             )}
-          </AnimatePresence>
-        </svg>
+          </>
+        )}
 
         {/* スコア表示（モード選択時） */}
         <AnimatePresence>
