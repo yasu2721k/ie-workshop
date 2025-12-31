@@ -34,7 +34,7 @@ export default function AdvancedVisualization({
     img.src = capturedImage;
   }, [capturedImage, mode, scores, problemAreas]);
 
-  const drawVisualization = (canvas: HTMLCanvasElement, img: HTMLImage) => {
+  const drawVisualization = (canvas: HTMLCanvasElement, img: HTMLImageElement) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
