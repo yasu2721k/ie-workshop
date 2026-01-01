@@ -252,6 +252,53 @@ export default function AdvancedVisualization({
     }
   };
 
+  // くすみのヒートマップ（簡易版）
+  const drawDullnessHeatmap = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+    const dullnessScore = scores.dullness;
+    
+    // 全体的なくすみオーバーレイ
+    ctx.fillStyle = dullnessScore <= 2 
+      ? 'rgba(139, 69, 19, 0.2)'
+      : dullnessScore <= 3 
+        ? 'rgba(160, 82, 45, 0.15)'
+        : 'rgba(255, 255, 255, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  };
+  
+  // ハリのヒートマップ（簡易版）
+  const drawFirmnessHeatmap = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+    const firmnessScore = scores.firmness;
+    
+    // 目元・口元のハリ不足を表現
+    const areas = [
+      { x: 0.35, y: 0.42 }, // 左目下
+      { x: 0.65, y: 0.42 }, // 右目下
+      { x: 0.5, y: 0.55 },  // 口元
+    ];
+    
+    areas.forEach(area => {
+      const gradient = ctx.createRadialGradient(
+        area.x * canvas.width,
+        area.y * canvas.height,
+        0,
+        area.x * canvas.width,
+        area.y * canvas.height,
+        canvas.width * 0.1
+      );
+      
+      const color = firmnessScore >= 4 
+        ? 'rgba(255, 182, 193, 0.3)'
+        : firmnessScore >= 3 
+          ? 'rgba(205, 92, 92, 0.3)'
+          : 'rgba(147, 112, 219, 0.4)';
+          
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+  };
+
   // スコアに基づいた色を取得
   const getColorForScore = (score: number, alpha = 1): string => {
     if (score <= 2) return `rgba(229, 115, 115, ${alpha})`;
