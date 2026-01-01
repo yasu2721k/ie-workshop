@@ -122,7 +122,15 @@ export default function CameraView({ onCapture, onError, captureMode = 'single',
   useEffect(() => {
     if (landmarks && isDetected && dimensions.width > 0) {
       const positions = getEyePositions(landmarks);
-      setCurrentEyePositions(positions);
+      // カメラが鏡像なので、X座標を反転
+      const mirroredPositions = {
+        ...positions,
+        leftEye: { x: 1 - positions.leftEye.x, y: positions.leftEye.y },
+        rightEye: { x: 1 - positions.rightEye.x, y: positions.rightEye.y },
+        leftUnderEye: positions.leftUnderEye?.map(p => ({ x: 1 - p.x, y: p.y })),
+        rightUnderEye: positions.rightUnderEye?.map(p => ({ x: 1 - p.x, y: p.y })),
+      };
+      setCurrentEyePositions(mirroredPositions);
 
       // 顔の位置・サイズをチェック
       const status = checkFacePosition(landmarks, dimensions.width, dimensions.height);

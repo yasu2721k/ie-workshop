@@ -44,8 +44,8 @@ export default function DetailedFaceAnalysis({
       return isLeft ? { x: 0.35, y: 0.38 } : { x: 0.65, y: 0.38 };
     }
     const eye = isLeft ? eyePositions.leftEye : eyePositions.rightEye;
-    // カメラ画像は左右反転しているのでXを反転
-    return { x: 1 - eye.x, y: eye.y };
+    // eyePositionsはすでに正しい座標なので、そのまま使用
+    return { x: eye.x, y: eye.y };
   };
 
   // 問題箇所のポイントを生成（スコアに基づいてドット数を調整）
@@ -341,8 +341,8 @@ export default function DetailedFaceAnalysis({
         </AnimatePresence>
       </div>
 
-      {/* モード切り替えボタン */}
-      <div className="p-4">
+      {/* モード切り替えボタン - 画像の下に固定 */}
+      <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-100 p-4">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {modes.map((mode) => {
             const isActive = activeMode === mode;

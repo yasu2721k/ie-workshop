@@ -38,10 +38,10 @@ function generatePromptJA(eyeData?: EyeAnalysisData, eyePositions?: EyePositionD
   // 目の位置情報（MediaPipeから取得した実際の座標）
   let eyePositionInfo = '';
   if (eyePositions) {
-    // カメラ画像は左右反転しているので、座標を反転
-    const leftX = (1 - eyePositions.leftEye.x).toFixed(2);
+    // 座標はすでに正しい向きなので、そのまま使用
+    const leftX = eyePositions.leftEye.x.toFixed(2);
     const leftY = eyePositions.leftEye.y.toFixed(2);
-    const rightX = (1 - eyePositions.rightEye.x).toFixed(2);
+    const rightX = eyePositions.rightEye.x.toFixed(2);
     const rightY = eyePositions.rightEye.y.toFixed(2);
 
     eyePositionInfo = `
