@@ -251,13 +251,14 @@ export default function DetailedFaceAnalysis({
 
       {/* 画像とオーバーレイ */}
       <div className="relative w-full aspect-[3/4] bg-[#1a1a1a]">
-        {/* 高度な可視化モード（クマ、シワ、潤い）の場合 */}
-        {(activeMode === 'darkCircles' || activeMode === 'wrinkles' || activeMode === 'moisture') ? (
+        {/* 高度な可視化モード（クマ、シワ、潤い、くすみ、ハリ）の場合 */}
+        {(activeMode === 'darkCircles' || activeMode === 'wrinkles' || activeMode === 'moisture' || activeMode === 'dullness' || activeMode === 'firmness') ? (
           <AdvancedVisualization
             capturedImage={capturedImage}
             scores={scores}
             problemAreas={problemAreas}
-            mode={activeMode}
+            mode={activeMode as 'darkCircles' | 'wrinkles' | 'moisture' | 'dullness' | 'firmness'}
+            eyePositions={eyePositions}
           />
         ) : (
           <>
@@ -267,8 +268,8 @@ export default function DetailedFaceAnalysis({
               className="w-full h-full object-cover"
             />
 
-            {/* SVGオーバーレイ - その他のモードのドット表示 */}
-            {(activeMode === 'firmness' || activeMode === 'dullness' || activeMode === 'overview') && (
+            {/* SVGオーバーレイ - overviewモードのみ */}
+            {activeMode === 'overview' && (
               <svg
                 className="absolute inset-0 w-full h-full"
                 viewBox="0 0 100 100"
