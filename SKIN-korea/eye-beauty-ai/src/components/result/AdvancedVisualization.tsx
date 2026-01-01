@@ -8,7 +8,7 @@ interface AdvancedVisualizationProps {
   capturedImage: string;
   scores: DiagnosisScores;
   problemAreas?: ProblemAreas | null;
-  mode: 'darkCircles' | 'wrinkles' | 'moisture';
+  mode: 'darkCircles' | 'wrinkles' | 'moisture' | 'dullness' | 'firmness';
 }
 
 export default function AdvancedVisualization({
@@ -50,6 +50,12 @@ export default function AdvancedVisualization({
         break;
       case 'moisture':
         drawMoistureHeatmap(ctx, canvas);
+        break;
+      case 'dullness':
+        drawDullnessHeatmap(ctx, canvas);
+        break;
+      case 'firmness':
+        drawFirmnessHeatmap(ctx, canvas);
         break;
     }
   };
