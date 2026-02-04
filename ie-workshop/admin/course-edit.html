@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>講座編集 | IE Workshop</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="course-edit.css">
+</head>
+<body>
+
+  <!-- ログイン画面（auth guard） -->
+  <div id="login-screen">
+    <div class="login-card">
+      <h1>IE Workshop 管理画面</h1>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="メールアドレス" required>
+        <input type="password" id="login-password" placeholder="パスワード" required>
+        <button type="submit" id="login-btn">ログイン</button>
+        <p id="login-error" class="error-msg"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- エディタ本体 -->
+  <div id="dashboard" class="hidden">
+    <header>
+      <div class="header-left">
+        <a href="index.html" class="back-link">← 一覧に戻る</a>
+        <h1 id="page-title">新規講座</h1>
+      </div>
+      <div class="header-actions">
+        <button id="save-draft-btn" class="btn btn-secondary">下書き保存</button>
+        <button id="publish-btn" class="btn btn-primary">公開</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- 基本情報 -->
+      <section class="editor-section">
+        <h2>基本情報</h2>
+        <div class="form-group">
+          <label for="course-name">講座名 <span class="required">*</span></label>
+          <input type="text" id="course-name" placeholder="例: 住宅予算診断">
+        </div>
+        <div class="form-group">
+          <label for="course-slug">Slug（URL用）</label>
+          <input type="text" id="course-slug" placeholder="例: housing-budget">
+          <small>ユーザーURL: ?course=<span id="slug-preview">---</span></small>
+        </div>
+        <div class="form-group">
+          <label for="course-description">説明</label>
+          <textarea id="course-description" rows="2" placeholder="講座の説明"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="course-liff-id">LIFF ID</label>
+          <input type="text" id="course-liff-id" placeholder="例: 2009051834-pEtorbrL">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="course-color">テーマカラー</label>
+            <input type="color" id="course-color" value="#764ba2">
+          </div>
+        </div>
+      </section>
+
+      <!-- UI設定 -->
+      <section class="editor-section">
+        <h2>画面テキスト</h2>
+        <div class="form-group">
+          <label for="ui-start-title">スタート画面タイトル</label>
+          <input type="text" id="ui-start-title" placeholder="例: 住宅予算診断">
+        </div>
+        <div class="form-group">
+          <label for="ui-start-desc">スタート画面説明文</label>
+          <textarea id="ui-start-desc" rows="2" placeholder="例: 動画を見ながら、あなたにぴったりの住宅予算を計算しましょう"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="ui-worksheet-title">ワークシートタイトル</label>
+          <input type="text" id="ui-worksheet-title" placeholder="例: My 住宅予算ワークシート">
+        </div>
+        <div class="form-group">
+          <label for="ui-result-title">結果画面タイトル</label>
+          <input type="text" id="ui-result-title" placeholder="例: あなたの住宅予算">
+        </div>
+      </section>
+
+      <!-- 動画 -->
+      <section class="editor-section">
+        <h2>動画</h2>
+        <div class="form-group">
+          <label for="video-file">動画ファイルをアップロード</label>
+          <input type="file" id="video-file" accept="video/mp4,video/webm">
+          <div id="upload-progress" class="hidden">
+            <div class="progress-bar"><div id="upload-bar"></div></div>
+            <span id="upload-percent">0%</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="video-url">または動画URL（YouTube等）</label>
+          <input type="text" id="video-url" placeholder="https://...">
+        </div>
+        <div id="video-preview-area" class="hidden">
+          <video id="video-preview" controls playsinline></video>
+          <p>動画の長さ: <span id="video-duration">-</span>秒</p>
+        </div>
+      </section>
+
+      <!-- フォームフィールド -->
+      <section class="editor-section">
+        <h2>入力フィールド</h2>
+        <div id="fields-container"></div>
+        <button id="add-field-btn" class="btn btn-secondary">＋ フィールド追加</button>
+      </section>
+
+      <!-- タイムライン -->
+      <section class="editor-section">
+        <h2>タイムライン（一時停止ポイント）</h2>
+        <div id="timeline-container"></div>
+        <button id="add-timeline-btn" class="btn btn-secondary">＋ 一時停止追加</button>
+      </section>
+
+      <!-- 計算設定 -->
+      <section class="editor-section">
+        <h2>計算設定</h2>
+        <div id="calc-container"></div>
+        <button id="add-calc-btn" class="btn btn-secondary">＋ 計算ステップ追加</button>
+        <div class="form-group" style="margin-top: 16px;">
+          <label for="calc-note">結果の注記</label>
+          <input type="text" id="calc-note" placeholder="例: ※ 35年ローン・金利1.5%で試算">
+        </div>
+        <div class="help-text">
+          <strong>計算式の書き方:</strong> フィールドIDを変数として使えます。<br>
+          例: <code>(rent + savings) - reserve</code><br>
+          関数: <code>LOAN_REVERSE(月額万円, 金利, 年数)</code> <code>ROUND(値)</code> <code>MAX(a, b)</code> <code>MIN(a, b)</code>
+        </div>
+      </section>
+
+      <!-- 保存ボタン（下部） -->
+      <div class="bottom-actions">
+        <button id="save-draft-btn-bottom" class="btn btn-secondary">下書き保存</button>
+        <button id="publish-btn-bottom" class="btn btn-primary">公開</button>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="auth.js"></script>
+  <script type="module" src="course-editor.js"></script>
+</body>
+</html>

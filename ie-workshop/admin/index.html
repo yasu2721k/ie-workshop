@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理画面 | IE Workshop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ログイン画面 -->
+  <div id="login-screen">
+    <div class="login-card">
+      <h1>IE Workshop 管理画面</h1>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="メールアドレス" required>
+        <input type="password" id="login-password" placeholder="パスワード" required>
+        <button type="submit" id="login-btn">ログイン</button>
+        <p id="login-error" class="error-msg"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ダッシュボード -->
+  <div id="dashboard" class="hidden">
+    <header>
+      <h1>IE Workshop 管理画面</h1>
+      <div class="header-actions">
+        <span id="user-email"></span>
+        <button id="logout-btn">ログアウト</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="toolbar">
+        <h2>講座一覧</h2>
+        <a href="course-edit.html" class="btn btn-primary">＋ 新規作成</a>
+      </div>
+
+      <div id="course-list">
+        <p class="loading">読み込み中...</p>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="auth.js"></script>
+  <script type="module" src="admin-app.js"></script>
+</body>
+</html>
