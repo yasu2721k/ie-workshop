@@ -1,4 +1,5 @@
 // ===== 定数 =====
+const LIFF_ID = '2009051834-pEtorbrL';
 const STORAGE_KEY = 'urihome-budget-sim';
 const TOTAL_DURATION = 20; // テスト動画: 20秒
 
@@ -308,10 +309,10 @@ function showResult() {
   saveState();
 }
 
-// ===== LINE送信（モック） =====
-sendLineBtn.addEventListener('click', () => {
+// ===== LINE送信 =====
+sendLineBtn.addEventListener('click', async () => {
   const budget = calculateBudget();
-  const message = [
+  const messageText = [
     '=== 住宅予算診断結果 ===',
     '',
     `年収: ${AppState.inputs.income}万円`,
@@ -326,9 +327,18 @@ sendLineBtn.addEventListener('click', () => {
     '========================',
   ].join('\n');
 
-  // LIFF未接続のため、alertでシミュレーション
-  // 実装時: liff.sendMessages([{ type: 'text', text: message }])
-  alert('【LINE送信シミュレーション】\n\n' + message);
+  if (liff.isInClient()) {
+    try {
+      await liff.sendMessages([{ type: 'text', text: messageText }]);
+      alert('診断結果をLINEトークに送信しました！');
+    } catch (e) {
+      console.error('LIFF sendMessages error:', e);
+      alert('送信に失敗しました。もう一度お試しください。');
+    }
+  } else {
+    // LINEアプリ外（ブラウザ）で開いた場合
+    alert('LINEアプリ内で開くと、トークに結果を送信できます。\n\n' + messageText);
+  }
 });
 
 // ===== リセット =====
@@ -442,5 +452,15 @@ document.querySelectorAll('.form-step input').forEach((input) => {
   });
 });
 
-// ===== 起動 =====
-init();
+// ===== LIFF初期化 & 起動 =====
+liff
+  .init({ liffId: LIFF_ID })
+  .then(() => {
+    console.log('LIFF initialized');
+    init();
+  })
+  .catch((err) => {
+    console.error('LIFF init error:', err);
+    // LIFF初期化に失敗しても診断自体は動かす
+    init();
+  });
