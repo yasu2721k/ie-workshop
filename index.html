@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>住宅予算診断 | UriHome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Yomogi&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- スタート画面 -->
+  <div id="start-screen">
+    <div class="start-content">
+      <h1>住宅予算診断</h1>
+      <p>動画を見ながら、あなたにぴったりの<br>住宅予算を一緒に計算しましょう</p>
+      <button id="start-btn">スタート</button>
+    </div>
+  </div>
+
+  <!-- 動画エリア（上部固定） -->
+  <div id="video-area">
+    <canvas id="video-canvas"></canvas>
+    <div id="video-progress">
+      <div id="video-progress-bar"></div>
+    </div>
+  </div>
+
+  <!-- スポットライト用オーバーレイ -->
+  <div id="spotlight-overlay"></div>
+
+  <!-- ワークシート -->
+  <div id="worksheet">
+    <div class="notebook-page">
+      <h2 class="notebook-title">My 住宅予算ワークシート</h2>
+
+      <!-- Step 1: 年収 -->
+      <div class="form-step" data-step="1" id="step-1">
+        <label for="income">① 年収（税込）</label>
+        <div class="input-line">
+          <input type="number" id="income" inputmode="numeric" placeholder="例: 500">
+          <span class="unit">万円</span>
+        </div>
+      </div>
+
+      <!-- Step 2: 家賃 -->
+      <div class="form-step" data-step="2" id="step-2">
+        <label for="rent">② 現在の家賃</label>
+        <div class="input-line">
+          <input type="number" id="rent" inputmode="numeric" placeholder="例: 8">
+          <span class="unit">万円/月</span>
+        </div>
+      </div>
+
+      <!-- Step 3: 貯金 -->
+      <div class="form-step" data-step="3" id="step-3">
+        <label for="savings">③ 月々の貯金額</label>
+        <div class="input-line">
+          <input type="number" id="savings" inputmode="numeric" placeholder="例: 3">
+          <span class="unit">万円/月</span>
+        </div>
+      </div>
+
+      <!-- Step 4: 予備費 -->
+      <div class="form-step" data-step="4" id="step-4">
+        <label for="reserve">④ 予備費（教育費など）</label>
+        <div class="input-line">
+          <input type="number" id="reserve" inputmode="numeric" placeholder="例: 2">
+          <span class="unit">万円/月</span>
+        </div>
+      </div>
+
+      <!-- 次へボタン -->
+      <button id="next-btn">次へ ▶</button>
+
+      <!-- 結果エリア -->
+      <div id="result-area">
+        <h2 class="result-title">📊 あなたの住宅予算</h2>
+        <div class="result-card">
+          <div class="result-item">
+            <span class="result-label">安全な月々の支払い額</span>
+            <span class="result-value" id="result-monthly"></span>
+          </div>
+          <div class="result-item result-main">
+            <span class="result-label">あなたの住宅予算（目安）</span>
+            <span class="result-value" id="result-budget"></span>
+          </div>
+          <p class="result-note">※ 35年ローン・金利1.5%で試算</p>
+        </div>
+        <button id="send-line-btn">LINEに結果を送る 📩</button>
+        <button id="reset-btn">最初からやり直す</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

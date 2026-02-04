@@ -1,0 +1,357 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Yomogi', cursive, sans-serif;
+  background: #f5f0e8;
+  color: #333;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: hidden;
+}
+
+/* ===== スタート画面 ===== */
+#start-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+#start-screen.hidden {
+  display: none;
+}
+
+.start-content h1 {
+  font-size: 2rem;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.start-content p {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+#start-btn {
+  display: inline-block;
+  padding: 16px 48px;
+  font-size: 1.2rem;
+  font-family: 'Yomogi', cursive;
+  color: #764ba2;
+  background: #fff;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#start-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 動画エリア ===== */
+#video-area {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  height: 30vh;
+  height: 30svh;
+  background: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+}
+
+#video-canvas {
+  flex: 1;
+  width: 100%;
+  display: block;
+}
+
+#video-progress {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+#video-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: width 0.3s linear;
+}
+
+/* ===== スポットライトオーバーレイ ===== */
+#spotlight-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+  transition: opacity 0.3s ease;
+}
+
+#spotlight-overlay.active {
+  display: block;
+}
+
+/* ===== ワークシート ===== */
+#worksheet {
+  padding: 16px;
+  padding-bottom: 80px;
+}
+
+.notebook-page {
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #fffef5;
+  background-image:
+    repeating-linear-gradient(
+      transparent,
+      transparent 39px,
+      #e0ddd4 39px,
+      #e0ddd4 40px
+    );
+  border-left: 3px solid #e88e8e;
+  border-radius: 4px;
+  padding: 20px 20px 40px 32px;
+  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+.notebook-title {
+  font-size: 1.3rem;
+  color: #555;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  line-height: 40px;
+}
+
+/* ===== フォームステップ ===== */
+.form-step {
+  padding: 12px 8px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  transition: background 0.3s, box-shadow 0.3s;
+  min-height: 80px;
+}
+
+.form-step label {
+  display: block;
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 40px;
+}
+
+.input-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.input-line input {
+  flex: 1;
+  max-width: 180px;
+  border: none;
+  border-bottom: 2px dashed #aaa;
+  background: transparent;
+  font-family: 'Yomogi', cursive;
+  font-size: 1.5rem;
+  color: #333;
+  text-align: right;
+  padding: 4px 0;
+  outline: none;
+  transition: border-color 0.2s;
+  line-height: 40px;
+}
+
+.input-line input:focus {
+  border-bottom-color: #764ba2;
+  border-bottom-style: solid;
+}
+
+.input-line input::placeholder {
+  color: #ccc;
+  font-size: 1rem;
+}
+
+.input-line .unit {
+  font-size: 1rem;
+  color: #888;
+  white-space: nowrap;
+}
+
+/* スポットライト時のアクティブステップ */
+.form-step.spotlight {
+  position: relative;
+  z-index: 300;
+  background: #fffef5;
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.4), 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+/* まだ到達していないステップ */
+.form-step.locked {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.form-step.locked input {
+  border-bottom-color: #ddd;
+}
+
+/* 完了済みステップ */
+.form-step.completed input {
+  color: #764ba2;
+  border-bottom-style: solid;
+  border-bottom-color: #764ba2;
+}
+
+/* ===== 次へボタン ===== */
+#next-btn {
+  display: none;
+  position: relative;
+  z-index: 300;
+  width: 100%;
+  max-width: 200px;
+  margin: 12px auto;
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  font-family: 'Yomogi', cursive;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#next-btn:active {
+  transform: scale(0.96);
+}
+
+/* ===== 結果エリア ===== */
+#result-area {
+  display: none;
+  text-align: center;
+  padding-top: 20px;
+}
+
+#result-area.visible {
+  display: block;
+}
+
+.result-title {
+  font-size: 1.4rem;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 40px;
+}
+
+.result-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.result-item {
+  margin-bottom: 16px;
+}
+
+.result-item:last-of-type {
+  margin-bottom: 8px;
+}
+
+.result-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.result-value {
+  display: block;
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: bold;
+}
+
+.result-main .result-value {
+  font-size: 2.2rem;
+  color: #764ba2;
+}
+
+.result-note {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-top: 8px;
+}
+
+#send-line-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  font-family: 'Yomogi', cursive;
+  color: #fff;
+  background: #06c755;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
+  margin-bottom: 12px;
+  transition: transform 0.2s;
+}
+
+#send-line-btn:active {
+  transform: scale(0.96);
+}
+
+#reset-btn {
+  display: block;
+  margin: 8px auto;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-family: 'Yomogi', cursive;
+  color: #999;
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  cursor: pointer;
+}
+
+/* ===== アニメーション ===== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#result-area.visible {
+  animation: fadeIn 0.5s ease;
+}
+
+#next-btn.visible {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
