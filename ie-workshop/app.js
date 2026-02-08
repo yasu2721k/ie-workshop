@@ -138,8 +138,12 @@ function setupVideo(course) {
   const youtubeEl = $('youtube-player');
 
   const videoUrl = course.video?.downloadUrl || '';
+  console.log('[setupVideo] videoUrl:', videoUrl);
+  console.log('[setupVideo] course.video:', course.video);
+
   // YouTube URL対応: watch?v=, youtu.be/, embed/, shorts/
   const youtubeMatch = videoUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  console.log('[setupVideo] youtubeMatch:', youtubeMatch);
 
   if (youtubeMatch) {
     // YouTube動画
