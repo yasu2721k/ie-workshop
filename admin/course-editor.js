@@ -44,6 +44,9 @@ function populateForm(data) {
   $('course-name').value = data.name || '';
   $('course-slug').value = data.slug || '';
   $('slug-preview').textContent = data.slug || '---';
+
+  // プレビュー/公開リンクを表示
+  updateViewLinks(data.slug, data.status);
   $('course-description').value = data.description || '';
   $('course-liff-id').value = data.liffId || '';
   $('course-color').value = data.ui?.primaryColor || '#764ba2';
@@ -386,6 +389,9 @@ async function saveCourse(status) {
 
     const msg = status === 'published' ? '公開しました' : '下書きを保存しました';
     alert(msg);
+
+    // リンクを更新
+    updateViewLinks(data.slug, status);
   } catch (err) {
     console.error('Save error:', err);
     alert('保存に失敗しました: ' + err.message);
@@ -401,4 +407,25 @@ $('publish-btn-bottom').addEventListener('click', () => saveCourse('published'))
 // ===== ユーティリティ =====
 function escapeAttr(str) {
   return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+// ===== プレビュー/公開リンク =====
+function updateViewLinks(slug, status) {
+  const previewLink = $('preview-link');
+  const publicLink = $('public-link');
+  const baseUrl = location.origin + location.pathname.replace('/admin/course-edit.html', '');
+
+  if (slug) {
+    // プレビューリンク（下書きでも見れる）
+    previewLink.href = `${baseUrl}/?course=${slug}&preview=1`;
+    previewLink.classList.remove('hidden');
+
+    // 公開リンク（publishedのみ）
+    if (status === 'published') {
+      publicLink.href = `${baseUrl}/?course=${slug}`;
+      publicLink.classList.remove('hidden');
+    } else {
+      publicLink.classList.add('hidden');
+    }
+  }
 }
