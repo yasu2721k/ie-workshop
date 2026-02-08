@@ -135,16 +135,28 @@ let videoController;
 function setupVideo(course) {
   const videoEl = $('course-video');
   const canvasEl = $('video-canvas');
+  const youtubeEl = $('youtube-player');
 
-  if (course.video?.downloadUrl) {
-    // 実動画がある場合
+  const videoUrl = course.video?.downloadUrl || '';
+  const youtubeMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+
+  if (youtubeMatch) {
+    // YouTube動画
     canvasEl.style.display = 'none';
+    videoEl.style.display = 'none';
+    youtubeEl.style.display = 'block';
+    videoController = new YouTubeController(youtubeEl, youtubeMatch[1], course.video?.duration || 60);
+  } else if (videoUrl) {
+    // 通常の動画ファイル
+    canvasEl.style.display = 'none';
+    youtubeEl.style.display = 'none';
     videoEl.style.display = 'block';
-    videoEl.src = course.video.downloadUrl;
+    videoEl.src = videoUrl;
     videoController = new RealVideoController(videoEl);
   } else {
     // 動画なし → Canvasモック
     videoEl.style.display = 'none';
+    youtubeEl.style.display = 'none';
     canvasEl.style.display = 'block';
     videoController = new MockVideoController(canvasEl, course.video?.duration || 20);
   }
@@ -161,6 +173,99 @@ function setupVideo(course) {
   videoController.onEnded = () => {
     if (AppState.currentStep >= TIMELINE.length) showResult();
   };
+}
+
+// ===== YouTubeController =====
+class YouTubeController {
+  constructor(containerEl, videoId, duration) {
+    this.container = containerEl;
+    this.videoId = videoId;
+    this.duration = duration;
+    this.currentTime = 0;
+    this.isPlaying = false;
+    this.player = null;
+    this.onTimeUpdate = null;
+    this.onEnded = null;
+    this._intervalId = null;
+    this._ready = false;
+    this._pendingPlay = false;
+
+    // YouTube IFrame API読み込み
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+
+    window.onYouTubeIframeAPIReady = () => this._initPlayer();
+    if (window.YT && window.YT.Player) this._initPlayer();
+  }
+
+  _initPlayer() {
+    this.player = new YT.Player(this.container, {
+      videoId: this.videoId,
+      playerVars: {
+        playsinline: 1,
+        controls: 0,
+        disablekb: 1,
+        modestbranding: 1,
+        rel: 0,
+      },
+      events: {
+        onReady: () => {
+          this._ready = true;
+          if (this._pendingPlay) this.play();
+        },
+        onStateChange: (e) => {
+          if (e.data === YT.PlayerState.ENDED && this.onEnded) {
+            this.onEnded();
+          }
+        },
+      },
+    });
+  }
+
+  play() {
+    if (!this._ready) {
+      this._pendingPlay = true;
+      return;
+    }
+    this.player.playVideo();
+    this.isPlaying = true;
+    this._startTracking();
+  }
+
+  pause() {
+    if (this.player && this._ready) this.player.pauseVideo();
+    this.isPlaying = false;
+    this._stopTracking();
+  }
+
+  seekTo(t) {
+    if (this.player && this._ready) this.player.seekTo(t, true);
+    this.currentTime = t;
+  }
+
+  _startTracking() {
+    this._stopTracking();
+    this._intervalId = setInterval(() => {
+      if (this.player && this._ready) {
+        this.currentTime = this.player.getCurrentTime();
+        const pct = (this.currentTime / this.duration) * 100;
+        $('video-progress-bar').style.width = pct + '%';
+        if (this.onTimeUpdate) this.onTimeUpdate(this.currentTime);
+      }
+    }, 250);
+  }
+
+  _stopTracking() {
+    if (this._intervalId) {
+      clearInterval(this._intervalId);
+      this._intervalId = null;
+    }
+  }
+
+  render() {}
 }
 
 // ===== RealVideoController =====
