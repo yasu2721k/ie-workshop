@@ -269,19 +269,69 @@ $('video-file').addEventListener('change', async (e) => {
   );
 });
 
-$('video-url').addEventListener('change', () => {
+// URLを貼り付け or 入力後にEnterでプレビュー
+$('video-url').addEventListener('input', debounce(() => {
   const url = $('video-url').value.trim();
   if (url) showVideoPreview(url);
+}, 500));
+
+$('video-url').addEventListener('paste', () => {
+  setTimeout(() => {
+    const url = $('video-url').value.trim();
+    if (url) showVideoPreview(url);
+  }, 100);
 });
 
 function showVideoPreview(url) {
   const area = $('video-preview-area');
   const video = $('video-preview');
+
+  // YouTube URLの場合は埋め込みURLに変換
+  const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  if (youtubeMatch) {
+    // YouTubeはvideoタグで直接再生できないので、メッセージ表示
+    area.classList.remove('hidden');
+    video.style.display = 'none';
+    area.innerHTML = `
+      <div style="background:#000;color:#fff;padding:20px;border-radius:8px;text-align:center;">
+        <p>YouTube動画: ${youtubeMatch[1]}</p>
+        <p style="font-size:0.8rem;color:#aaa;">YouTubeは直接プレビューできませんが、保存後にユーザー画面で再生できます</p>
+      </div>
+      <p>動画の長さ: <input type="number" id="video-duration-manual" placeholder="秒数を入力" style="width:80px;"> 秒</p>
+    `;
+    $('video-duration-manual')?.addEventListener('input', (e) => {
+      $('video-duration').textContent = e.target.value;
+    });
+    return;
+  }
+
+  // 通常の動画URL
   area.classList.remove('hidden');
-  video.src = url;
-  video.addEventListener('loadedmetadata', () => {
-    $('video-duration').textContent = Math.round(video.duration);
+  area.innerHTML = `
+    <video id="video-preview" controls playsinline></video>
+    <p>動画の長さ: <span id="video-duration">-</span>秒</p>
+  `;
+  const newVideo = $('video-preview');
+  newVideo.src = url;
+  newVideo.addEventListener('loadedmetadata', () => {
+    $('video-duration').textContent = Math.round(newVideo.duration);
   }, { once: true });
+  newVideo.addEventListener('error', () => {
+    area.innerHTML = `
+      <div style="background:#fee;color:#c00;padding:12px;border-radius:8px;">
+        動画を読み込めませんでした。URLを確認してください。
+      </div>
+      <p>動画の長さ: <input type="number" id="video-duration-manual" placeholder="秒数を手動入力" style="width:100px;"> 秒</p>
+    `;
+  });
+}
+
+function debounce(fn, ms) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), ms);
+  };
 }
 
 // ===== Slug自動生成 =====
