@@ -138,7 +138,8 @@ function setupVideo(course) {
   const youtubeEl = $('youtube-player');
 
   const videoUrl = course.video?.downloadUrl || '';
-  const youtubeMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  // YouTube URL対応: watch?v=, youtu.be/, embed/, shorts/
+  const youtubeMatch = videoUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/);
 
   if (youtubeMatch) {
     // YouTube動画
@@ -202,7 +203,8 @@ class YouTubeController {
   }
 
   _initPlayer() {
-    this.player = new YT.Player(this.container, {
+    if (this._ready) return; // 重複防止
+    this.player = new YT.Player(this.container.id || this.container, {
       videoId: this.videoId,
       playerVars: {
         playsinline: 1,
@@ -210,6 +212,7 @@ class YouTubeController {
         disablekb: 1,
         modestbranding: 1,
         rel: 0,
+        origin: location.origin,
       },
       events: {
         onReady: () => {
