@@ -1,7 +1,8 @@
 import { db } from './firebase-config.js';
 import { collection, doc, getDoc, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js';
 
-console.log('=== app.js v2 loaded ===');
+console.log('=== app.js v3 loaded ===');
+alert('app.js v3');
 
 // ===== DOM =====
 const $ = (id) => document.getElementById(id);
