@@ -707,22 +707,29 @@ function initApp() {
 
 // ===== 起動 =====
 (async () => {
-  const course = await loadCourse();
-  if (!course) return;
+  console.log('=== 起動開始 ===');
+  try {
+    const course = await loadCourse();
+    console.log('=== course loaded ===', course);
+    console.log('=== course.video ===', course?.video);
+    if (!course) return;
 
-  buildUI(course);
+    buildUI(course);
 
   $('loading-screen').classList.add('hidden');
 
-  // LIFF初期化
-  if (LIFF_ID && typeof liff !== 'undefined') {
-    try {
-      await liff.init({ liffId: LIFF_ID });
-      console.log('LIFF initialized');
-    } catch (err) {
-      console.error('LIFF init error:', err);
+    // LIFF初期化
+    if (LIFF_ID && typeof liff !== 'undefined') {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+        console.log('LIFF initialized');
+      } catch (err) {
+        console.error('LIFF init error:', err);
+      }
     }
-  }
 
-  initApp();
+    initApp();
+  } catch (err) {
+    console.error('=== 起動エラー ===', err);
+  }
 })();
