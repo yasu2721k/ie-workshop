@@ -501,6 +501,7 @@ function bindEvents() {
 
   // スタートボタン
   $('start-btn').addEventListener('click', () => {
+    console.log('[start-btn] clicked, videoController:', videoController);
     AppState.isStarted = true;
     $('start-screen').classList.add('hidden');
     saveState();
