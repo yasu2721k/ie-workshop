@@ -33,38 +33,59 @@ async function loadCourse() {
     return null;
   }
 
-  try {
-    // まずIDで直接取得
-    let snap = await getDoc(doc(db, 'courses', courseParam));
+  // リトライロジック（モバイルでのFirestore初期化遅延対策）
+  const maxRetries = 3;
+  let lastError = null;
 
-    // 見つからなければslugで検索
-    if (!snap.exists()) {
-      const q = query(collection(db, 'courses'), where('slug', '==', courseParam));
-      const results = await getDocs(q);
-      if (!results.empty) {
-        snap = results.docs[0];
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[loadCourse] 試行 ${attempt}/${maxRetries}`);
+
+      // まずIDで直接取得
+      let snap = await getDoc(doc(db, 'courses', courseParam));
+
+      // 見つからなければslugで検索
+      if (!snap.exists()) {
+        const q = query(collection(db, 'courses'), where('slug', '==', courseParam));
+        const results = await getDocs(q);
+        if (!results.empty) {
+          snap = results.docs[0];
+        }
+      }
+
+      if (!snap.exists()) {
+        // データが見つからない場合はリトライしない
+        showError('講座が見つかりません');
+        return null;
+      }
+
+      const data = snap.data();
+      // preview=1 なら下書きも表示可能
+      const isPreview = params.get('preview') === '1';
+      if (data.status !== 'published' && !isPreview) {
+        showError('この講座は現在非公開です');
+        return null;
+      }
+
+      console.log(`[loadCourse] 成功（試行 ${attempt}）`);
+      return data;
+    } catch (err) {
+      lastError = err;
+      console.warn(`[loadCourse] 試行 ${attempt} 失敗:`, err.code, err.message);
+
+      if (attempt < maxRetries) {
+        // 次のリトライまで待機（1秒、2秒...）
+        const waitTime = attempt * 1000;
+        console.log(`[loadCourse] ${waitTime}ms後にリトライ...`);
+        await new Promise(r => setTimeout(r, waitTime));
       }
     }
-
-    if (!snap.exists()) {
-      showError('講座が見つかりません');
-      return null;
-    }
-
-    const data = snap.data();
-    // preview=1 なら下書きも表示可能
-    const isPreview = params.get('preview') === '1';
-    if (data.status !== 'published' && !isPreview) {
-      showError('この講座は現在非公開です');
-      return null;
-    }
-
-    return data;
-  } catch (err) {
-    console.error('Course load error:', err);
-    showError('講座の読み込みに失敗しました');
-    return null;
   }
+
+  // 全リトライ失敗
+  console.error('[loadCourse] 全リトライ失敗:', lastError);
+  showError('講座の読み込みに失敗しました。ページを再読み込みしてください。');
+  return null;
 }
 
 function showError(msg) {
