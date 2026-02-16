@@ -230,8 +230,12 @@ class YouTubeController {
       },
       events: {
         onReady: () => {
+          console.log('[YouTubeController] Player ready');
           this._ready = true;
-          if (this._pendingPlay) this.play();
+          if (this._pendingPlay) {
+            console.log('[YouTubeController] Executing pending play');
+            this.play();
+          }
         },
         onStateChange: (e) => {
           if (e.data === YT.PlayerState.ENDED && this.onEnded) {
@@ -243,13 +247,16 @@ class YouTubeController {
   }
 
   play() {
+    console.log('[YouTubeController.play] called, _ready:', this._ready);
     if (!this._ready) {
       this._pendingPlay = true;
+      console.log('[YouTubeController.play] Not ready, pending play');
       return;
     }
     this.player.playVideo();
     this.isPlaying = true;
     this._startTracking();
+    console.log('[YouTubeController.play] Started tracking');
   }
 
   pause() {
@@ -264,6 +271,7 @@ class YouTubeController {
   }
 
   _startTracking() {
+    console.log('[YouTubeController._startTracking] Setting up interval');
     this._stopTracking();
     this._intervalId = setInterval(() => {
       if (this.player && this._ready) {
