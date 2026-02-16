@@ -238,7 +238,24 @@ class YouTubeController {
           }
         },
         onStateChange: (e) => {
+          console.log('[YouTubeController] State changed:', e.data);
+          // 再生開始時（ユーザーがクリックした場合も含む）
+          if (e.data === YT.PlayerState.PLAYING) {
+            if (!this.isPlaying) {
+              console.log('[YouTubeController] Video started playing, starting tracking');
+              this.isPlaying = true;
+              this._startTracking();
+            }
+          }
+          // 一時停止時
+          if (e.data === YT.PlayerState.PAUSED) {
+            this.isPlaying = false;
+            this._stopTracking();
+          }
+          // 終了時
           if (e.data === YT.PlayerState.ENDED && this.onEnded) {
+            this.isPlaying = false;
+            this._stopTracking();
             this.onEnded();
           }
         },
