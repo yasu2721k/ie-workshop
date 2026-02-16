@@ -39,27 +39,35 @@ async function loadCourse() {
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`[loadCourse] 試行 ${attempt}/${maxRetries}`);
+      console.log(`[loadCourse] 試行 ${attempt}/${maxRetries}, courseParam: "${courseParam}"`);
+
+      let data = null;
 
       // まずIDで直接取得
-      let snap = await getDoc(doc(db, 'courses', courseParam));
+      const snapById = await getDoc(doc(db, 'courses', courseParam));
+      console.log(`[loadCourse] ID検索結果: exists=${snapById.exists()}`);
 
-      // 見つからなければslugで検索
-      if (!snap.exists()) {
+      if (snapById.exists()) {
+        data = snapById.data();
+        console.log(`[loadCourse] ID検索でヒット`);
+      } else {
+        // 見つからなければslugで検索
+        console.log(`[loadCourse] slug検索開始: slug="${courseParam}"`);
         const q = query(collection(db, 'courses'), where('slug', '==', courseParam));
         const results = await getDocs(q);
+        console.log(`[loadCourse] slug検索結果: empty=${results.empty}, size=${results.size}`);
         if (!results.empty) {
-          snap = results.docs[0];
+          data = results.docs[0].data();
+          console.log(`[loadCourse] slug検索でヒット: id=${results.docs[0].id}`);
         }
       }
 
-      if (!snap.exists()) {
+      if (!data) {
         // データが見つからない場合はリトライしない
-        showError('講座が見つかりません');
+        console.log(`[loadCourse] 講座が見つかりません`);
+        showError(`講座が見つかりません (course=${courseParam})`);
         return null;
       }
-
-      const data = snap.data();
       // preview=1 なら下書きも表示可能
       const isPreview = params.get('preview') === '1';
       if (data.status !== 'published' && !isPreview) {
