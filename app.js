@@ -78,11 +78,12 @@ function buildUI(course) {
   COURSE = course;
   FIELDS = (course.fields || []).sort((a, b) => a.order - b.order);
   TIMELINE = (course.timeline || []).map((t, i) => ({
-    pauseAt: t.pauseAt,
+    pauseAt: parseFloat(t.pauseAt) || 0,
     step: i + 1,
     field: t.fieldId,
     label: t.prompt,
   }));
+  console.log('[buildUI] TIMELINE:', TIMELINE);
   CALC_STEPS = course.calculation?.steps || [];
   LIFF_ID = course.liffId || null;
   STORAGE_KEY = `ie-workshop-${course.slug || 'default'}`;
@@ -171,10 +172,17 @@ function setupVideo(course) {
   // タイムアップデート
   videoController.onTimeUpdate = (currentTime) => {
     AppState.videoTime = currentTime;
+    // デバッグ: 5秒ごとにログ出力
+    if (Math.floor(currentTime) % 5 === 0 && Math.floor(currentTime) !== Math.floor(AppState.videoTime - 0.25)) {
+      console.log('[onTimeUpdate] currentTime:', currentTime, 'currentStep:', AppState.currentStep);
+    }
     const nextPause = TIMELINE.find(
       (t) => t.step > AppState.currentStep && currentTime >= t.pauseAt
     );
-    if (nextPause) activateStep(nextPause);
+    if (nextPause) {
+      console.log('[onTimeUpdate] Pause triggered:', nextPause);
+      activateStep(nextPause);
+    }
   };
 
   videoController.onEnded = () => {
