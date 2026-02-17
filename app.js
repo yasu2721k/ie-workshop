@@ -33,67 +33,38 @@ async function loadCourse() {
     return null;
   }
 
-  // リトライロジック（モバイルでのFirestore初期化遅延対策）
-  const maxRetries = 3;
-  let lastError = null;
+  try {
+    // まずIDで直接取得
+    let snap = await getDoc(doc(db, 'courses', courseParam));
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`[loadCourse] 試行 ${attempt}/${maxRetries}, courseParam: "${courseParam}"`);
-
-      let data = null;
-
-      // まずIDで直接取得
-      const snapById = await getDoc(doc(db, 'courses', courseParam));
-      console.log(`[loadCourse] ID検索結果: exists=${snapById.exists()}`);
-
-      if (snapById.exists()) {
-        data = snapById.data();
-        console.log(`[loadCourse] ID検索でヒット`);
-      } else {
-        // 見つからなければslugで検索
-        console.log(`[loadCourse] slug検索開始: slug="${courseParam}"`);
-        const q = query(collection(db, 'courses'), where('slug', '==', courseParam));
-        const results = await getDocs(q);
-        console.log(`[loadCourse] slug検索結果: empty=${results.empty}, size=${results.size}`);
-        if (!results.empty) {
-          data = results.docs[0].data();
-          console.log(`[loadCourse] slug検索でヒット: id=${results.docs[0].id}`);
-        }
-      }
-
-      if (!data) {
-        // データが見つからない場合はリトライしない
-        console.log(`[loadCourse] 講座が見つかりません`);
-        showError(`講座が見つかりません (course=${courseParam})`);
-        return null;
-      }
-      // preview=1 なら下書きも表示可能
-      const isPreview = params.get('preview') === '1';
-      if (data.status !== 'published' && !isPreview) {
-        showError('この講座は現在非公開です');
-        return null;
-      }
-
-      console.log(`[loadCourse] 成功（試行 ${attempt}）`);
-      return data;
-    } catch (err) {
-      lastError = err;
-      console.warn(`[loadCourse] 試行 ${attempt} 失敗:`, err.code, err.message);
-
-      if (attempt < maxRetries) {
-        // 次のリトライまで待機（1秒、2秒...）
-        const waitTime = attempt * 1000;
-        console.log(`[loadCourse] ${waitTime}ms後にリトライ...`);
-        await new Promise(r => setTimeout(r, waitTime));
+    // 見つからなければslugで検索
+    if (!snap.exists()) {
+      const q = query(collection(db, 'courses'), where('slug', '==', courseParam));
+      const results = await getDocs(q);
+      if (!results.empty) {
+        snap = results.docs[0];
       }
     }
-  }
 
-  // 全リトライ失敗
-  console.error('[loadCourse] 全リトライ失敗:', lastError);
-  showError('講座の読み込みに失敗しました。ページを再読み込みしてください。');
-  return null;
+    if (!snap.exists()) {
+      showError('講座が見つかりません');
+      return null;
+    }
+
+    const data = snap.data();
+    // preview=1 なら下書きも表示可能
+    const isPreview = params.get('preview') === '1';
+    if (data.status !== 'published' && !isPreview) {
+      showError('この講座は現在非公開です');
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Course load error:', err);
+    showError('講座の読み込みに失敗しました');
+    return null;
+  }
 }
 
 function showError(msg) {
