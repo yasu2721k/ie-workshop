@@ -529,11 +529,13 @@ function bindEvents() {
   $('send-line-btn').addEventListener('click', sendLineResult);
 
   // リセット
-  $('reset-btn').addEventListener('click', () => {
+  const resetHandler = () => {
     if (!confirm('入力内容をすべてリセットしますか？')) return;
     localStorage.removeItem(STORAGE_KEY);
     location.reload();
-  });
+  };
+  $('reset-btn').addEventListener('click', resetHandler);
+  $('worksheet-reset-btn').addEventListener('click', resetHandler);
 
   // モバイルキーボード対応
   document.querySelectorAll('.form-step input').forEach((input) => {

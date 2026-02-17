@@ -381,7 +381,8 @@ body {
   transform: scale(0.96);
 }
 
-#reset-btn {
+#reset-btn,
+.worksheet-reset {
   display: block;
   margin: 8px auto;
   padding: 10px 24px;
@@ -392,6 +393,10 @@ body {
   border: 1px solid #ddd;
   border-radius: 50px;
   cursor: pointer;
+}
+
+.worksheet-reset {
+  margin-top: 24px;
 }
 
 /* ===== アニメーション ===== */
