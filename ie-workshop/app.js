@@ -99,6 +99,10 @@ function buildUI(course) {
     document.documentElement.style.setProperty('--primary-color', course.ui.primaryColor);
   }
 
+  // 入力デザイン適用
+  const designKey = course.ui?.inputDesign || 'notebook';
+  document.querySelector('.notebook-page').classList.add(`design-${designKey}`);
+
   // スタート画面
   $('start-title').textContent = course.ui?.startScreenTitle || course.name || '';
   $('start-desc').innerHTML = (course.ui?.startScreenDescription || '').replace(/\n/g, '<br>');

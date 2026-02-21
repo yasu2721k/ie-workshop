@@ -56,6 +56,13 @@ function populateForm(data) {
   $('ui-worksheet-title').value = data.ui?.title || '';
   $('ui-result-title').value = data.ui?.resultTitle || '';
 
+  // デザイン
+  const designKey = data.ui?.inputDesign || 'notebook';
+  $('input-design').value = designKey;
+  document.querySelectorAll('.design-option').forEach(o => {
+    o.classList.toggle('selected', o.dataset.design === designKey);
+  });
+
   // 動画
   if (data.video?.downloadUrl) {
     $('video-url').value = data.video.downloadUrl;
@@ -350,6 +357,15 @@ $('course-slug').addEventListener('input', () => {
   $('slug-preview').textContent = $('course-slug').value || '---';
 });
 
+// ===== デザインセレクター =====
+document.querySelectorAll('.design-option').forEach(option => {
+  option.addEventListener('click', () => {
+    document.querySelectorAll('.design-option').forEach(o => o.classList.remove('selected'));
+    option.classList.add('selected');
+    $('input-design').value = option.dataset.design;
+  });
+});
+
 // ===== データ収集 =====
 function collectFormData(status) {
   // フィールド
@@ -404,6 +420,7 @@ function collectFormData(status) {
       title: $('ui-worksheet-title').value.trim(),
       resultTitle: $('ui-result-title').value.trim(),
       primaryColor: $('course-color').value,
+      inputDesign: $('input-design').value || 'notebook',
     },
     video: videoUrl ? { downloadUrl: videoUrl, duration: parseInt($('video-duration')?.textContent) || 0 } : null,
     fields,
