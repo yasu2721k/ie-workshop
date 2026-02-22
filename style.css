@@ -413,3 +413,464 @@ body {
   display: block;
   animation: fadeIn 0.3s ease;
 }
+
+/* ======================================================
+   入力欄デザインバリエーション (10種)
+   .notebook-page.design-{key} でスコープ
+   ====================================================== */
+
+/* ----- 1. notebook (デフォルト) ----- */
+/* 既存スタイルがそのまま適用されるため追加CSSなし */
+
+/* ----- 2. card (カード風) ----- */
+.notebook-page.design-card {
+  background-image: none;
+  border-left: none;
+  background-color: #f5f5f5;
+  padding: 20px 16px 40px 16px;
+}
+.design-card .notebook-title {
+  line-height: 1.4;
+  color: #444;
+}
+.design-card .form-step {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border-left: 4px solid #764ba2;
+}
+.design-card .form-step label {
+  line-height: 1.4;
+  color: #555;
+  font-weight: bold;
+}
+.design-card .input-line input {
+  border-bottom: 2px solid #e0e0e0;
+  line-height: 1.6;
+  font-size: 1.4rem;
+}
+.design-card .input-line input:focus {
+  border-bottom-color: #764ba2;
+}
+.design-card .form-step.spotlight {
+  border-left-color: #667eea;
+  box-shadow: 0 4px 20px rgba(102,126,234,0.25);
+}
+.design-card .form-step.completed input {
+  color: #764ba2;
+  border-bottom-color: #764ba2;
+}
+
+/* ----- 3. outline (アウトライン) ----- */
+.notebook-page.design-outline {
+  background-image: none;
+  border-left: none;
+  background-color: #fff;
+}
+.design-outline .notebook-title {
+  line-height: 1.4;
+}
+.design-outline .form-step {
+  padding: 14px 12px;
+}
+.design-outline .form-step label {
+  line-height: 1.4;
+  font-size: 0.85rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.design-outline .input-line input {
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  text-align: left;
+  border-bottom-style: solid;
+}
+.design-outline .input-line input:focus {
+  border-color: #764ba2;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(118,75,162,0.1);
+}
+.design-outline .form-step.spotlight {
+  background: #fafafe;
+  box-shadow: 0 0 20px rgba(102,126,234,0.2);
+  border-radius: 12px;
+}
+.design-outline .form-step.completed input {
+  border-color: #764ba2;
+  color: #764ba2;
+}
+
+/* ----- 4. minimal (ミニマル) ----- */
+.notebook-page.design-minimal {
+  background-image: none;
+  border-left: none;
+  background-color: #fff;
+  box-shadow: none;
+  padding: 24px 20px 40px 20px;
+}
+.design-minimal .notebook-title {
+  line-height: 1.4;
+  font-weight: normal;
+  color: #999;
+  font-size: 1rem;
+}
+.design-minimal .form-step {
+  padding: 20px 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.design-minimal .form-step label {
+  line-height: 1.4;
+  font-size: 0.8rem;
+  color: #bbb;
+  letter-spacing: 0.5px;
+}
+.design-minimal .input-line input {
+  border-bottom: 1px solid #e8e8e8;
+  font-size: 1.6rem;
+  line-height: 1.6;
+  color: #333;
+}
+.design-minimal .input-line input:focus {
+  border-bottom-color: #333;
+  border-bottom-style: solid;
+}
+.design-minimal .input-line .unit {
+  color: #ccc;
+}
+.design-minimal .form-step.spotlight {
+  background: #fff;
+  box-shadow: none;
+  border-radius: 0;
+  border-bottom-color: #333;
+}
+.design-minimal .form-step.completed input {
+  color: #764ba2;
+  border-bottom-color: #764ba2;
+}
+
+/* ----- 5. neon (ネオン) ----- */
+.notebook-page.design-neon {
+  background-image: none;
+  border-left: none;
+  background: linear-gradient(135deg, #0f0c29, #1a1a2e, #16213e);
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
+}
+.design-neon .notebook-title {
+  line-height: 1.4;
+  color: rgba(255,255,255,0.7);
+}
+.design-neon .form-step {
+  padding: 16px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.design-neon .form-step label {
+  line-height: 1.4;
+  color: rgba(255,255,255,0.5);
+}
+.design-neon .input-line input {
+  border-bottom: 1px solid rgba(0,255,255,0.3);
+  color: #0ff;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  background: transparent;
+}
+.design-neon .input-line input::placeholder {
+  color: rgba(255,255,255,0.2);
+}
+.design-neon .input-line input:focus {
+  border-bottom-color: #0ff;
+  box-shadow: 0 2px 12px rgba(0,255,255,0.3);
+}
+.design-neon .input-line .unit {
+  color: rgba(255,255,255,0.4);
+}
+.design-neon .form-step.spotlight {
+  background: rgba(0,255,255,0.05);
+  box-shadow: 0 0 30px rgba(0,255,255,0.15), inset 0 0 20px rgba(0,255,255,0.05);
+  border-color: rgba(0,255,255,0.3);
+}
+.design-neon .form-step.completed input {
+  color: #bf5af2;
+  border-bottom-color: #bf5af2;
+  text-shadow: 0 0 8px rgba(191,90,242,0.4);
+}
+.design-neon .form-step.locked {
+  opacity: 0.15;
+}
+.design-neon .result-title,
+.design-neon .result-label {
+  color: rgba(255,255,255,0.6);
+}
+.design-neon .result-value {
+  color: #0ff;
+}
+.design-neon .result-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,255,255,0.15);
+}
+.design-neon .result-note {
+  color: rgba(255,255,255,0.3);
+}
+.design-neon .worksheet-reset,
+.design-neon #reset-btn {
+  color: rgba(255,255,255,0.4);
+  border-color: rgba(255,255,255,0.15);
+}
+
+/* ----- 6. pastel (パステル) ----- */
+.notebook-page.design-pastel {
+  background-image: none;
+  border-left: none;
+  background: linear-gradient(180deg, #fce4ec, #f3e5f5, #e8eaf6);
+  border-radius: 20px;
+}
+.design-pastel .notebook-title {
+  line-height: 1.4;
+  color: #7b5ea7;
+}
+.design-pastel .form-step {
+  background: rgba(255,255,255,0.6);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.design-pastel .form-step:nth-child(4n+1) { background: rgba(255,205,210,0.3); }
+.design-pastel .form-step:nth-child(4n+2) { background: rgba(187,222,251,0.3); }
+.design-pastel .form-step:nth-child(4n+3) { background: rgba(200,230,201,0.3); }
+.design-pastel .form-step:nth-child(4n)   { background: rgba(225,190,231,0.3); }
+.design-pastel .form-step label {
+  line-height: 1.4;
+  color: #7b5ea7;
+}
+.design-pastel .input-line input {
+  border-bottom: 2px dashed #ce93d8;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: #6a1b9a;
+}
+.design-pastel .input-line input:focus {
+  border-bottom-color: #ab47bc;
+  border-bottom-style: solid;
+}
+.design-pastel .input-line .unit {
+  color: #ba68c8;
+}
+.design-pastel .form-step.spotlight {
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 4px 24px rgba(171,71,188,0.2);
+}
+.design-pastel .form-step.completed input {
+  color: #7b1fa2;
+  border-bottom-color: #ce93d8;
+}
+
+/* ----- 7. glass (グラス風) ----- */
+.notebook-page.design-glass {
+  background-image: none;
+  border-left: none;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+.design-glass .notebook-title {
+  line-height: 1.4;
+  color: #555;
+}
+.design-glass .form-step {
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.design-glass .form-step label {
+  line-height: 1.4;
+  color: #666;
+}
+.design-glass .input-line input {
+  border-bottom: 1.5px solid rgba(118,75,162,0.3);
+  font-size: 1.4rem;
+  line-height: 1.6;
+  background: transparent;
+}
+.design-glass .input-line input:focus {
+  border-bottom-color: #764ba2;
+  background: rgba(255,255,255,0.3);
+}
+.design-glass .form-step.spotlight {
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 8px 32px rgba(102,126,234,0.2);
+  border-color: rgba(118,75,162,0.3);
+}
+.design-glass .form-step.completed input {
+  color: #764ba2;
+  border-bottom-color: #764ba2;
+}
+
+/* ----- 8. gradient (グラデーション) ----- */
+.notebook-page.design-gradient {
+  background-image: none;
+  border-left: none;
+  background: linear-gradient(135deg, #fafafa, #f0f0ff);
+}
+.design-gradient .notebook-title {
+  line-height: 1.4;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.design-gradient .form-step {
+  padding: 16px 12px 16px 16px;
+  margin-bottom: 14px;
+  border-left: 3px solid transparent;
+  border-image: linear-gradient(to bottom, #667eea, #764ba2) 1;
+}
+.design-gradient .form-step label {
+  line-height: 1.4;
+  color: #666;
+}
+.design-gradient .input-line input {
+  border-bottom: 2px solid #e0e0e0;
+  font-size: 1.4rem;
+  line-height: 1.6;
+}
+.design-gradient .input-line input:focus {
+  border-image: linear-gradient(to right, #667eea, #764ba2) 1;
+  border-bottom-style: solid;
+}
+.design-gradient .form-step.spotlight {
+  background: linear-gradient(135deg, rgba(102,126,234,0.05), rgba(118,75,162,0.05));
+  box-shadow: 0 4px 20px rgba(102,126,234,0.15);
+  border-radius: 12px;
+  border-left: 3px solid #667eea;
+  border-image: none;
+}
+.design-gradient .form-step.completed input {
+  color: #764ba2;
+  border-bottom: 2px solid;
+  border-image: linear-gradient(to right, #667eea, #764ba2) 1;
+}
+
+/* ----- 9. retro (レトロ) ----- */
+.notebook-page.design-retro {
+  background-image: none;
+  border-left: 3px solid #8b6914;
+  background-color: #f5e6c8;
+  box-shadow: 3px 3px 0 #d4b87a;
+}
+.design-retro .notebook-title {
+  line-height: 1.4;
+  color: #5a3e00;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.design-retro .form-step {
+  padding: 14px 10px;
+  border-bottom: 1px dotted #c9a96e;
+}
+.design-retro .form-step label {
+  line-height: 1.4;
+  color: #8b6914;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.design-retro .input-line input {
+  border-bottom: 2px dotted #8b6914;
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: #5a3e00;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.design-retro .input-line input:focus {
+  border-bottom-color: #5a3e00;
+  border-bottom-style: solid;
+}
+.design-retro .input-line .unit {
+  color: #8b6914;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+.design-retro .form-step.spotlight {
+  background: rgba(245,230,200,0.9);
+  box-shadow: 0 2px 12px rgba(139,105,20,0.2);
+  border-radius: 4px;
+}
+.design-retro .form-step.completed input {
+  color: #5a3e00;
+  border-bottom-color: #5a3e00;
+  border-bottom-style: solid;
+}
+
+/* ----- 10. pop (ポップ) ----- */
+.notebook-page.design-pop {
+  background-image: none;
+  border-left: none;
+  background: #fffde7;
+  border: 3px solid #333;
+  border-radius: 20px;
+  box-shadow: 6px 6px 0 #333;
+}
+.design-pop .notebook-title {
+  line-height: 1.4;
+  color: #ff6b6b;
+  font-weight: 900;
+  font-size: 1.5rem;
+}
+.design-pop .form-step {
+  padding: 14px 12px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  border: 2px solid #333;
+}
+.design-pop .form-step:nth-child(4n+1) { background: #ffecb3; }
+.design-pop .form-step:nth-child(4n+2) { background: #b3e5fc; }
+.design-pop .form-step:nth-child(4n+3) { background: #c8e6c9; }
+.design-pop .form-step:nth-child(4n)   { background: #f8bbd0; }
+.design-pop .form-step label {
+  line-height: 1.4;
+  color: #333;
+  font-weight: 900;
+  font-size: 1rem;
+}
+.design-pop .input-line input {
+  border: 2.5px solid #333;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 1.3rem;
+  line-height: 1.6;
+  font-weight: 900;
+  text-align: left;
+  background: #fff;
+}
+.design-pop .input-line input:focus {
+  border-color: #ff6b6b;
+  box-shadow: 3px 3px 0 #ff6b6b;
+}
+.design-pop .input-line .unit {
+  color: #333;
+  font-weight: 900;
+}
+.design-pop .form-step.spotlight {
+  box-shadow: 4px 4px 0 #667eea, 0 0 20px rgba(102,126,234,0.2);
+  border-color: #667eea;
+  transform: rotate(-0.5deg);
+}
+.design-pop .form-step.completed input {
+  border-color: #4ecdc4;
+  color: #333;
+  box-shadow: 2px 2px 0 #4ecdc4;
+}
+.design-pop .form-step.locked {
+  opacity: 0.25;
+}
